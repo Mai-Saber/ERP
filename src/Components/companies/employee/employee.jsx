@@ -1,56 +1,57 @@
 import React, { useState, useEffect } from "react";
-
 import Table from "../../../common/table/table";
+import TableFilter from "../../../common/tableFilter/tableFilter";
 import "../../../common/show modal/showModal.css";
 import Loading from "../../../common/loading/loading";
 import NoData from "../../../common/noData/noData";
 import TableIcons from "../../../common/tableIcons/tableIcons";
 import WrongMessage from "../../../common/wrongMessage/wrongMessage";
-import { base_url, config } from "../../../service/service";
 
-import "./companies.css";
-import Buttons from "./buttons/buttons";
-import CompaniesFilters from "./companiesFilters/companiesFilters";
-
-import axios from "axios";
-import Toastify from "toastify-js";
-import "toastify-js/src/toastify.css";
-import { useTranslation } from "react-i18next";
 import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
 
-function Companies(props) {
+import axios from "axios";
+import { base_url, config } from "../../../service/service";
+import Toastify from "toastify-js";
+import "toastify-js/src/toastify.css";
+import { useTranslation } from "react-i18next";
+
+function Employee(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
-  const [filterClients, setFilterClients] = useState([]);
+  const [companyID, setCompanyID] = useState(props.companyIDInApp);
   const [columnsHeader, setColumnsHeader] = useState([]);
-  const [companies, setCompanies] = useState([]);
-  const [totalCompaniesLength, setTotalCompaniesLength] = useState("");
+  const [employee, setEmployees] = useState([]);
+  const [totalEmployeesLength, setTotalEmployeesLength] = useState("");
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
-  const [newCompany, setNewCompany] = useState({
+  const [newEmployee, setNewEmployee] = useState({
+    company_id: companyID,
     name: "",
-    client_id: "",
+    email: "",
+    phone: "",
+    password: "",
+    address: "",
   });
   const { t } = useTranslation();
 
   // general
   useEffect(() => {
-    // get companies
-    const getCompanies = async () => {
-      const url = `${base_url}/admin/companies`;
+    //  getEmployees
+    const getEmployees = async () => {
+      const url = `${base_url}/admin/company-employees`;
       await axios
         .get(url)
         .then((res) => {
           setLoading(false);
-          setColumnsHeader(["Id","Name","Pages"]);
-          setCompanies(res.data.data);
-          setTotalCompaniesLength(res.data.meta?.total);
+          setColumnsHeader(["Id", "Name", "Email", "Phone"]);
+          setEmployees(res.data.data);
+          setTotalEmployeesLength(res.data.meta?.total);
         })
         .catch((err) => {
           // loading
@@ -61,25 +62,17 @@ function Companies(props) {
           setWrongMessage(true);
         });
     };
-
-    // get filter countries
-    const filterClients = async () => {
-      const res = await axios.get(`${base_url}/admin/clients`);
-      setFilterClients(res.data.data);
-    };
-
     // call functions
-    getCompanies();
-    filterClients();
+    getEmployees();
   }, []);
 
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newCompany,
+      ...newEmployee,
       [e.target.name]: e.target.value,
     };
-    setNewCompany(newData);
+    setNewEmployee(newData);
 
     const newItem = {
       ...editItem,
@@ -123,14 +116,14 @@ function Companies(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/companies/search?
+        `${base_url}/admin/company-employees/search?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setCompanies(res.data.data);
+      setEmployees(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -138,10 +131,10 @@ function Companies(props) {
 
   // delete
   const handleDelete = async (id, name) => {
-    if (window.confirm("Are you Sure? ")) {
-      await axios.delete(`${base_url}/admin/company/${id}`, config);
-      const newRow = companies.filter((item) => item.id !== id);
-      setCompanies(newRow); // setRow(filterItems);
+    if (window.confirm("Are you Sure?")) {
+      await axios.delete(`${base_url}/admin/company-employee/${id}`, config);
+      const newRow = employee.filter((item) => item.id !== id);
+      setEmployees(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -163,23 +156,36 @@ function Companies(props) {
   // add
   const handleAdd = () => {
     setAddModal(true);
+    setNewEmployee({
+      company_id:companyID,
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      address: "",
+    });
   };
 
-  const handleSubmitAddCompanies = async () => {
+  const handleSubmitAdd = async () => {
     await axios
-      .post(`${base_url}/admin/company`, newCompany)
+      .post(`${base_url}/admin/company-employee`, newEmployee)
       .then((res) => {
         Toastify({
-          text: `company created successfully `,
+          text: ` Employee created successfully`,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        companies.unshift(res.data.data);
-        setNewCompany({
+        employee.unshift(res.data.data);
+        setNewEmployee({
+          company_id:companyID,
           name: "",
-          client_id: "",
+          email: "",
+          phone: "",
+          password: "",
+          address: "",
+          
         });
         setAddModal(false);
       })
@@ -198,34 +204,45 @@ function Companies(props) {
   // show
   const handleShow = async (id) => {
     setShowModal(true);
-    const res = await axios.get(`${base_url}/admin/company/${id}`, config);
+    const res = await axios.get(
+      `${base_url}/admin/company-employee/${id}`,
+      config
+    );
     setSelectedItem(res.data.data);
+    console.log("show", res.data.data)
   };
 
   // edit
   const handleEdit = async (id) => {
-    const res = await axios.get(`${base_url}/admin/company/${id}`);
+    console.log("edit", id);
+    const res = await axios.get(`${base_url}/admin/company-employee/${id}`);
+    console.log("edit", res.data.data);
     setEditItem(res.data.data);
     setEditModal(true);
   };
 
   const handleSubmitEdit = async (id) => {
     const data = {
+      company_id: companyID,
       name: editItem.name,
+      phone: editItem.phone,
+      email: editItem.email,
+      password: editItem.password,
+      address: editItem.address,
     };
     await axios
-      .patch(`${base_url}/admin/company/${id}`, data)
+      .patch(`${base_url}/admin/company-employee/${id}`, data)
       .then((res) => {
         Toastify({
-          text: `Company updated successfully`,
+          text: `Employee updated successfully`,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < companies.length; i++) {
-          if (companies[i].id === id) {
-            companies[i] = res.data.data;
+        for (let i = 0; i < employee.length; i++) {
+          if (employee[i].id === id) {
+            employee[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -239,6 +256,7 @@ function Companies(props) {
             color: "white",
           },
         }).showToast();
+        console.log(err);
       });
   };
 
@@ -248,57 +266,43 @@ function Companies(props) {
     setAddModal(false);
     setEditModal(false);
   };
-
-  /////////////////////////////////////////////////
+  /////////////////////////////////////////
   return (
     <>
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
-      {/* companies */}
+      {/* clients */}
       {!loading && !wrongMessage && (
-        <div className="companies">
+        <div className="Employee">
           {/* header */}
-          <h1 className="header">{t("Companies")}</h1>
+          <h1 className="header">{t("Employee")}</h1>
           {/* upper table */}
-          <CompaniesFilters
-            searchRequestControls={searchRequestControls}
-            filterClients={filterClients}
-            handleSearchReq={handleSearchReq}
+          <TableFilter
             handleAdd={handleAdd}
+            inputName="queryString"
+            inputValue={searchRequestControls.queryString}
+            handleChangeSearch={(e) =>
+              handleSearchReq(e, { queryString: e.target.value })
+            }
           />
           {/* table */}
-          {companies.length !== 0 ? (
+          {employee.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalCompaniesLength}
+              totalRecords={totalEmployeesLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {companies?.map((item, i) => (
+              {employee?.map((item, i) => (
                 <tr key={item.id}>
                   <td>{i + 1}</td>
                   <td className="name">{item.name} </td>
-                  {/* buttons */}
-                  <Buttons
-                    item={item}
-                    handleVariant={props.handleVariant}
-                    handleBranches={props.handleBranches}
-                    handleEmployee={props.handleEmployee}
-                    handleContacts={props.handleContacts}
-                    handleCategories={props.handleCategories}
-                    handlePriceList={props.handlePriceList}
-                    handleBankAccount={props.handleBankAccount}
-                    handleCashBox={props.handleCashBox}
-                    handleTax={props.handleTax}
-                    handleAdditionalBox={props.handleAdditionalBox}
-                    handleMeasurementUnit={props.handleMeasurementUnit}
-                    handleDiscount={props.handleDiscount}
-                    handleInvoices={props.handleInvoices}
-                  />
-                  {/* icons */}
+                  <td>{item.email}</td>
+                  <td>{item.phone}</td>
+
                   <TableIcons
                     item={item}
                     handleDelete={handleDelete}
@@ -309,22 +313,25 @@ function Companies(props) {
               ))}
             </Table>
           ) : (
-            <NoData data="company" />
+            <NoData data="Employee" />
           )}
           {/* modals */}
           {/* show modal */}
           <ModalShow
             show={showModal}
             handleClose={handleClose}
+            title={selectedItem.name}
             item={selectedItem}
           />
+
           {/* add modal */}
           <ModalAdd
             show={addModal}
             handleClose={handleClose}
-            newCompany={newCompany}
+            title={t("AddNewEmployee")}
+            newEmployee={newEmployee}
             handleChange={handleChange}
-            handleSubmitAddCompanies={handleSubmitAddCompanies}
+            handleSubmitAdd={handleSubmitAdd}
           />
           {/* edit modal */}
           <ModalEdit
@@ -332,14 +339,14 @@ function Companies(props) {
             handleClose={handleClose}
             editItem={editItem}
             handleChange={handleChange}
-            handleSubmitEdit={handleSubmitEdit}
+            handleSubmitEdit={() => handleSubmitEdit(editItem.id)}
           />
         </div>
       )}
-      {/* WrongMessage */}
+      {/* wrong message */}
       {!loading && wrongMessage && <WrongMessage />}
     </>
   );
 }
 
-export default Companies;
+export default Employee;

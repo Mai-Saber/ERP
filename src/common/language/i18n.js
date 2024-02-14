@@ -84,6 +84,9 @@ i18n
           Root: "Root",
           Admin: "Admin",
           All: "All",
+          //Employee
+          Employee: "Employee",
+          AddNewEmployee: "Add New Employee",
           //Variant
           AddNewVariant: "Add New Variant",
           EditVariant: "Edit Variant",
@@ -106,6 +109,10 @@ i18n
           PriceList: "Price List",
           AddNewPriceList: "Add New Price List",
           EditPriceList: "Edit Price List",
+          // PriceListProduct
+          PriceListProduct: "Price List Product",
+          AddNewPriceListProduct: "Add New Price List Product",
+
           // Contacts
           Contacts: "Contacts",
           AddNewContact: "Add New Contact",
@@ -117,9 +124,40 @@ i18n
           FinalProductVariantValues: "Final Product Variant Values",
           FinalProductId: "Final Product Id",
           // Images
-          FinalProductImages:"Final Product Images",
+          FinalProductImages: "Final Product Images",
           Images: "Images",
           AddImage: "Add Image",
+          // BankAccount
+          BankAccount: "Bank Account",
+          AddNewBankAccount: "Add New Bank Account",
+          EditBankAccount: "Edit Bank Account",
+          // CashBox
+          CashBox: "Cash Box",
+          AddNewCashBox: "Add New Cash Box",
+          EditCashBox: "Edit Cash Box",
+          // Tax
+          Tax: "Tax",
+          AddNewTax: "Add New Tax",
+          EditTax: "Edit Tax",
+          // AdditionalBox
+          AdditionalBox: "Additional Box",
+          EditAdditionalBox: "Edit Additional Box",
+          // MeasurementUnit
+          equals: "equals",
+          AddNewMeasurementUnit: "Add New Measurement Unit",
+          MeasurementUnit: "Measurement Unit",
+          EditUnit: "Edit Unit",
+          // DiscountAndOffers
+          DiscountAndOffers: "Discount & Offers",
+          AddNewDiscount: "Add New Discount",
+          DateFrom: "Date From",
+          DateTo: "Date To",
+          DiscountPercentage: "Discount Percentage",
+          DiscountBranch: "Discount Branch",
+          // DiscountFinalProduct
+          DiscountFinalProduct: "Discount Final Product",
+          // invoices
+          Invoices: "Invoices",
         },
       },
       ar: {
@@ -195,6 +233,9 @@ i18n
           Root: "روت",
           Admin: "ادمن",
           All: "الجميع",
+          // Employee
+          Employee: "موظف",
+          AddNewEmployee: " اضافة موظف جديد",
           //Variant
           AddNewVariant: "اضافة صنف جديد",
           EditVariant: " تعديل صنف",
@@ -217,6 +258,9 @@ i18n
           PriceList: "قائمة اسعار",
           AddNewPriceList: "اضافة قائمة اسعار جديدة",
           EditPriceList: "تعديل قائمة اسعار",
+          // PriceListProduct
+          PriceListProduct: "قائمة اسعار المنتج",
+          AddNewPriceListProduct: "اضافة قائمة اسعار منتج جديدة",
           // Contacts
           Contacts: "جهات الاتصال",
           AddNewContact: "اضافة جهة اتصال جديدة",
@@ -228,9 +272,41 @@ i18n
           FinalProductVariantValues: "قيم الاصناف في المنتج النهائي",
           FinalProductId: "الرقم االتعريفي للمنتج النهائي",
           // Images
-          FinalProductImage:"صور المننتج النهائي",
+          FinalProductImage: "صور المننتج النهائي",
           Images: "الصور ",
-          AddImage:"اضافة صورة",
+          AddImage: "اضافة صورة",
+          // BankAccount
+          BankAccount: "حساب بنكي",
+          AddNewBankAccount: "اضافة حساب بنكي جديد",
+          EditBankAccount: "تعديل حساب بنكي",
+          // CashBox
+          CashBox: "صندوق نقدي",
+          AddNewCashBox: "اضافة صندوق نقدي جديد",
+          EditCashBox: "تعديل صندوق نقدي",
+          // Tax
+          Tax: "ضرائب",
+          AddNewTax: "اضافة ضريبة جديدة",
+          EditTax: "تعديل ضريبة",
+          // AdditionalBox
+          AdditionalBox: "صندوق اضافي",
+          EditAdditionalBox: "تعديل صندوق اضافي ",
+          // MeasurementUnit
+          MeasurementUnit: "وحدات القياس ",
+          AddNewMeasurementUnit: "اضافة وحدة قياس جديدة",
+          equals: "تكافئ",
+          EditUnit: "تعديل وحدة قياس",
+          // DiscountAndOffers
+          DiscountAndOffers: "خصومات و عروض ",
+          AddNewDiscount: "اضافة خصم جديد",
+          DateFrom: "ابتداءا من",
+          DateTo: "انتهاءا في",
+          DiscountPercentage: "نسبة الخصم",
+          DiscountBranch: "خصم على الفرع",
+          // DiscountFinalProduct
+          DiscountFinalProduct: "خصم على المنتج النهائي",
+
+          // invoices
+          Invoices: "فواتير",
         },
       },
     },

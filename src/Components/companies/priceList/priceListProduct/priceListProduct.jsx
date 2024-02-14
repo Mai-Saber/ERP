@@ -1,85 +1,88 @@
 import React, { useState, useEffect } from "react";
 
-import Table from "../../../common/table/table";
-import "../../../common/show modal/showModal.css";
-import Loading from "../../../common/loading/loading";
-import NoData from "../../../common/noData/noData";
-import TableIcons from "../../../common/tableIcons/tableIcons";
-import WrongMessage from "../../../common/wrongMessage/wrongMessage";
-import { base_url, config } from "../../../service/service";
-
-import "./companies.css";
-import Buttons from "./buttons/buttons";
-import CompaniesFilters from "./companiesFilters/companiesFilters";
+import NoData from "../../../../common/noData/noData";
+import Table from "../../../../common/table/table";
+import "../../../../common/show modal/showModal.css";
+import TableFilter from "../../../../common/tableFilter/tableFilter";
+import Loading from "../../../../common/loading/loading";
+import TableIcons from "../../../../common/tableIcons/tableIcons";
+import WrongMessage from "../../../../common/wrongMessage/wrongMessage";
+import { base_url, config } from "../../../../service/service";
 
 import axios from "axios";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 import { useTranslation } from "react-i18next";
+
 import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
 
-function Companies(props) {
+export  function PriceListProduct(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
-  const [filterClients, setFilterClients] = useState([]);
+  const [companyID, setCompanyID] = useState(props.companyIDInApp);
+  const [clientID, setClientID] = useState(props.clientIdInApp);
+  const [priceListId, setPriceListID] = useState(props.priceListIdInApp);
   const [columnsHeader, setColumnsHeader] = useState([]);
-  const [companies, setCompanies] = useState([]);
-  const [totalCompaniesLength, setTotalCompaniesLength] = useState("");
+  const [priceListProducts, setPriceLIstProducts] = useState([]);
+  const [totalPriceListProductsLength, setTotalPriceListProductsLength] =
+    useState("");
+ 
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
-  const [newCompany, setNewCompany] = useState({
-    name: "",
-    client_id: "",
+  const [newPriceListProduct, setNewPriceListProduct] = useState({
+    client_id: clientID,
+    company_id: companyID,
+    price_list_id: priceListId,
+    final_product_id: "",
+    price: "",
   });
   const { t } = useTranslation();
 
   // general
   useEffect(() => {
-    // get companies
-    const getCompanies = async () => {
-      const url = `${base_url}/admin/companies`;
-      await axios
-        .get(url)
-        .then((res) => {
-          setLoading(false);
-          setColumnsHeader(["Id","Name","Pages"]);
-          setCompanies(res.data.data);
-          setTotalCompaniesLength(res.data.meta?.total);
-        })
-        .catch((err) => {
-          // loading
-          setTimeout(function () {
+    // get variants
+    const getPriceListProducts = async () => {
+      try {
+        const url = `${base_url}/admin/company/price-list/price-list-products/${priceListId}`;
+        await axios
+          .get(url)
+          .then((res) => {
             setLoading(false);
-          }, 3000);
+            console.log("res", res.data.data);
+            setColumnsHeader(["Id", "price List", "Value"]);
+            setPriceLIstProducts(res.data.data);
+            setTotalPriceListProductsLength(res.data.meta?.total);
+          })
+          .catch((err) => {
+            console.log("err", err)
+            // loading
+            setTimeout(function () {
+              setLoading(false);
+            }, 3000);
 
-          setWrongMessage(true);
-        });
+            setWrongMessage(true);
+          });
+      } catch (err) {
+        console.log(err);
+      }
     };
-
-    // get filter countries
-    const filterClients = async () => {
-      const res = await axios.get(`${base_url}/admin/clients`);
-      setFilterClients(res.data.data);
-    };
-
     // call functions
-    getCompanies();
-    filterClients();
+    getPriceListProducts();
   }, []);
 
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newCompany,
+      ...newPriceListProduct,
       [e.target.name]: e.target.value,
     };
-    setNewCompany(newData);
+    setNewPriceListProduct(newData);
 
     const newItem = {
       ...editItem,
@@ -88,9 +91,7 @@ function Companies(props) {
     setEditItem(newItem);
   };
 
-  // search & filter
   // search & filter & pagination
-
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [pageNumber, setPageNumber] = useState(0);
   const [searchRequestControls, setSearchRequestControls] = useState({
@@ -123,27 +124,30 @@ function Companies(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/companies/search?
+        `${base_url}/admin/company/price-list/price-list-products/search/${priceListId}?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setCompanies(res.data.data);
+      setPriceLIstProducts(res.data.data);
     } catch (err) {
       console.log(err);
     }
   };
 
   // delete
-  const handleDelete = async (id, name) => {
+  const handleDelete = async ({ id, value }) => {
     if (window.confirm("Are you Sure? ")) {
-      await axios.delete(`${base_url}/admin/company/${id}`, config);
-      const newRow = companies.filter((item) => item.id !== id);
-      setCompanies(newRow); // setRow(filterItems);
+      await axios.delete(
+        `${base_url}/admin/company/price-list/price-list-product/${id}`,
+        config
+      );
+      const newRow = priceListProducts.filter((item) => item.id !== id);
+      setPriceLIstProducts(newRow); // setRow(filterItems);
       Toastify({
-        text: `${name} deleted `,
+        text: `${value} deleted `,
         style: {
           background: "green",
           color: "white",
@@ -151,7 +155,7 @@ function Companies(props) {
       }).showToast();
     } else {
       Toastify({
-        text: `${name} haven't deleted `,
+        text: `${value} haven't deleted `,
         style: {
           background: "orange",
           color: "white",
@@ -165,21 +169,36 @@ function Companies(props) {
     setAddModal(true);
   };
 
-  const handleSubmitAddCompanies = async () => {
+  const handleSubmitAddPriceListProduct = async () => {
+    const data = {
+      client_id: clientID,
+      company_id: companyID,
+      price_list_id: priceListId,
+      final_products: [
+        {
+          final_product_id: newPriceListProduct.final_product_id,
+          price: newPriceListProduct.price,
+        },
+      ],
+    };
+
     await axios
-      .post(`${base_url}/admin/company`, newCompany)
+      .post(`${base_url}/admin/company/price-list/price-list-product`, data)
       .then((res) => {
         Toastify({
-          text: `company created successfully `,
+          text: `product created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        companies.unshift(res.data.data);
-        setNewCompany({
-          name: "",
-          client_id: "",
+        priceListProducts.unshift(res.data.data);
+        setNewPriceListProduct({
+          client_id: clientID,
+          company_id: companyID,
+          price_list_id: priceListId,
+          final_product_id: "",
+          price: "",
         });
         setAddModal(false);
       })
@@ -198,34 +217,42 @@ function Companies(props) {
   // show
   const handleShow = async (id) => {
     setShowModal(true);
-    const res = await axios.get(`${base_url}/admin/company/${id}`, config);
+    const res = await axios.get(
+      `${base_url}/admin/company/price-list/price-list-product${id}`,
+      config
+    );
     setSelectedItem(res.data.data);
   };
 
   // edit
   const handleEdit = async (id) => {
-    const res = await axios.get(`${base_url}/admin/company/${id}`);
+    const res = await axios.get(
+      `${base_url}/admin/company/price-list/price-list-product/${id}`
+    );
     setEditItem(res.data.data);
     setEditModal(true);
   };
 
   const handleSubmitEdit = async (id) => {
     const data = {
-      name: editItem.name,
+      value: editItem.value,
     };
     await axios
-      .patch(`${base_url}/admin/company/${id}`, data)
+      .patch(
+        `${base_url}/admin/company/price-list/price-list-product/${id}`,
+        data
+      )
       .then((res) => {
         Toastify({
-          text: `Company updated successfully`,
+          text: `Value updated successfully`,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < companies.length; i++) {
-          if (companies[i].id === id) {
-            companies[i] = res.data.data;
+        for (let i = 0; i < priceListProducts.length; i++) {
+          if (priceListProducts[i].id === id) {
+            priceListProducts[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -248,60 +275,48 @@ function Companies(props) {
     setAddModal(false);
     setEditModal(false);
   };
-
-  /////////////////////////////////////////////////
+  // ////////////////////////////////////////
   return (
     <>
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
-      {/* companies */}
+
+      {/* price list product */}
       {!loading && !wrongMessage && (
-        <div className="companies">
+        <div className="PriceListProduct">
           {/* header */}
-          <h1 className="header">{t("Companies")}</h1>
+          <h1 className="header">{t("PriceListProduct")}</h1>
           {/* upper table */}
-          <CompaniesFilters
-            searchRequestControls={searchRequestControls}
-            filterClients={filterClients}
-            handleSearchReq={handleSearchReq}
+          <TableFilter
             handleAdd={handleAdd}
+            inputName="queryString"
+            inputValue={searchRequestControls.queryString}
+            handleChangeSearch={(e) =>
+              handleSearchReq(e, { queryString: e.target.value })
+            }
           />
           {/* table */}
-          {companies.length !== 0 ? (
+          {priceListProducts.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalCompaniesLength}
+              totalRecords={totalPriceListProductsLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {companies?.map((item, i) => (
+              {priceListProducts?.map((item, i) => (
                 <tr key={item.id}>
                   <td>{i + 1}</td>
-                  <td className="name">{item.name} </td>
-                  {/* buttons */}
-                  <Buttons
-                    item={item}
-                    handleVariant={props.handleVariant}
-                    handleBranches={props.handleBranches}
-                    handleEmployee={props.handleEmployee}
-                    handleContacts={props.handleContacts}
-                    handleCategories={props.handleCategories}
-                    handlePriceList={props.handlePriceList}
-                    handleBankAccount={props.handleBankAccount}
-                    handleCashBox={props.handleCashBox}
-                    handleTax={props.handleTax}
-                    handleAdditionalBox={props.handleAdditionalBox}
-                    handleMeasurementUnit={props.handleMeasurementUnit}
-                    handleDiscount={props.handleDiscount}
-                    handleInvoices={props.handleInvoices}
-                  />
+                  <td>{item.name}</td>
+
                   {/* icons */}
                   <TableIcons
                     item={item}
-                    handleDelete={handleDelete}
+                    handleDelete={() =>
+                      handleDelete({ value: item.name, id: item.id })
+                    }
                     handleEdit={handleEdit}
                     handleShow={handleShow}
                   />
@@ -309,7 +324,7 @@ function Companies(props) {
               ))}
             </Table>
           ) : (
-            <NoData data="company" />
+            <NoData data="price list product" />
           )}
           {/* modals */}
           {/* show modal */}
@@ -321,10 +336,10 @@ function Companies(props) {
           {/* add modal */}
           <ModalAdd
             show={addModal}
+            newPriceListProduct={newPriceListProduct}
             handleClose={handleClose}
-            newCompany={newCompany}
             handleChange={handleChange}
-            handleSubmitAddCompanies={handleSubmitAddCompanies}
+            handleSubmitAddPriceListProduct={handleSubmitAddPriceListProduct}
           />
           {/* edit modal */}
           <ModalEdit
@@ -336,10 +351,10 @@ function Companies(props) {
           />
         </div>
       )}
-      {/* WrongMessage */}
+      {/* wrong message */}
       {!loading && wrongMessage && <WrongMessage />}
     </>
   );
 }
 
-export default Companies;
+// export default PriceListProduct;

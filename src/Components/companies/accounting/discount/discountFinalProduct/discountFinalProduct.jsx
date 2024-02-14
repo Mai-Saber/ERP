@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 
-import NoData from "../../../../../../common/noData/noData";
-import Table from "../../../../../../common/table/table";
-import "../../../../../../common/show modal/showModal.css";
-import TableFilter from "../../../../../../common/tableFilter/tableFilter";
-import Loading from "../../../../../../common/loading/loading";
-import WrongMessage from "../../../../../../common/wrongMessage/wrongMessage";
-import { base_url, config } from "../../../../../../service/service";
+import NoData from "../../../../../common/noData/noData";
+import Table from "../../../../../common/table/table";
+import "../../../../../common/show modal/showModal.css";
+import TableFilter from "../../../../../common/tableFilter/tableFilter";
+import Loading from "../../../../../common/loading/loading";
+import TableIcons from "../../../../../common/tableIcons/tableIcons";
+import WrongMessage from "../../../../../common/wrongMessage/wrongMessage";
+import { base_url, config } from "../../../../../service/service";
 
 import axios from "axios";
 import Toastify from "toastify-js";
@@ -17,59 +18,72 @@ import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
 import { Link } from "react-router-dom";
 
-function FinalProductImages(props) {
+function DiscountFinalProduct(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
-  const [finalProductId, setFinalProductId] = useState(
-    props.finalProductIDInApp
-  );
+  const [companyID, setCompanyID] = useState(props.companyIDInApp);
+  const [clientID, setClientID] = useState(props.clientIdInApp);
+  const [discountID, setDiscountID] = useState(props.discountIDInApp);
   const [columnsHeader, setColumnsHeader] = useState([]);
-  const [images, setImages] = useState([]);
-  const [totalImagesLength, setTotalImagesLength] = useState("");
+  const [discountFinalProduct, setDiscountFinalProduct] = useState([]);
+  const [
+    totalDiscountFinalProductsLength,
+    setTotalDiscountFinalProductsLength,
+  ] = useState("");
 
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
-
-  const [file, setFile] = useState();
+  const [newDiscountFinalProduct, setNewDiscountFinalProduct] = useState({
+    client_id: clientID,
+    company_id: companyID,
+    discount_id: discountID,
+    category_id: "",
+    product_id: "",
+    final_product_id: "",
+  });
   const { t } = useTranslation();
 
   // general
   useEffect(() => {
-    try {
-      console.log("imgggggggggggg");
-      // get img
-      const getImages = async () => {
-        try {
-          const url = `${base_url}/admin/company/category/product/final-product-images/${finalProductId}`;
-          await axios
-            .get(url)
-            .then((res) => {
+    // getDiscountFinalProduct
+    const getDiscountFinalProduct = async () => {
+      try {
+        const url = `${base_url}/admin/company/accounting/discount-final-products/${discountID}`;
+        await axios
+          .get(url)
+          .then((res) => {
+            setLoading(false);
+            console.log("res", res.data.data);
+            setColumnsHeader(["Id", "FinalProduct"]);
+            setDiscountFinalProduct(res.data.data);
+            setTotalDiscountFinalProductsLength(res.data.meta?.total);
+          })
+          .catch((err) => {
+            // loading
+            setTimeout(function () {
               setLoading(false);
-              setColumnsHeader(["Id", "images"]);
-              setImages(res.data?.data);
-              console.log(res.data.data);
-              setTotalImagesLength(res.data.meta?.total);
-            })
-            .catch((err) => {
-              // loading
-              setTimeout(function () {
-                setLoading(false);
-              }, 3000);
+            }, 3000);
 
-              setWrongMessage(true);
-            });
-        } catch (err) {
-          console.log(err);
-        }
-      };
-      // call functions
-      getImages();
-    } catch (err) {
-      console.log(err);
-    }
+            setWrongMessage(true);
+          });
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    // call functions
+    getDiscountFinalProduct();
   }, []);
+
+  // change any input
+  const handleChange = (e) => {
+    const newData = {
+      ...newDiscountFinalProduct,
+      [e.target.name]: e.target.value,
+    };
+    setNewDiscountFinalProduct(newData);
+  };
 
   // search & filter & pagination
 
@@ -105,30 +119,30 @@ function FinalProductImages(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/company/category/product/final-product-images/search/${finalProductId}?
+        `${base_url}/admin/company/accounting/discount-final-products/search/${discountID}?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setImages(res.data.data);
+      setDiscountFinalProduct(res.data.data);
     } catch (err) {
       console.log(err);
     }
   };
 
   // delete
-  const handleDelete = async (id, name) => {
+  const handleDelete = async ({ id, value }) => {
     if (window.confirm("Are you Sure? ")) {
       await axios.delete(
-        `${base_url}/admin/company/category/product/final-product-image/${id}`,
+        `${base_url}/admin/company/accounting/discount-final-product/${id}`,
         config
       );
-      const newRow = images.filter((item) => item.id !== id);
-      setImages(newRow); // setRow(filterItems);
+      const newRow = discountFinalProduct.filter((item) => item.id !== id);
+      setDiscountFinalProduct(newRow); // setRow(filterItems);
       Toastify({
-        text: `${name} deleted `,
+        text: `${value} deleted `,
         style: {
           background: "green",
           color: "white",
@@ -136,7 +150,7 @@ function FinalProductImages(props) {
       }).showToast();
     } else {
       Toastify({
-        text: `${name} haven't deleted `,
+        text: `${value} haven't deleted `,
         style: {
           background: "orange",
           color: "white",
@@ -150,26 +164,40 @@ function FinalProductImages(props) {
     setAddModal(true);
   };
 
-  const handleChangeFile = (event) => {
-    setFile(event.target.files[0]);
-  };
+  const handleSubmitAdd = async () => {
+    const data = {
+      client_id: newDiscountFinalProduct.client_id,
+      company_id: newDiscountFinalProduct.company_id,
+      discount_id: newDiscountFinalProduct.discount_id,
+      final_products: [
+        {
+          category_id: newDiscountFinalProduct.category_id,
+          product_id: newDiscountFinalProduct.product_id,
+          final_product_id: newDiscountFinalProduct.final_product_id,
+        },
+      ],
+    };
 
-  const handleCreateImgFromFile = async ({ fileId }) => {
+    console.log("data", data);
     await axios
-      .post(`${base_url}/admin/company/category/product/final-product-image`, {
-        final_product_id: finalProductId,
-        files: [fileId],
-      })
+      .post(`${base_url}/admin/company/accounting/discount-final-product`, data)
       .then((res) => {
         Toastify({
-          text: `Image created successfully `,
+          text: `discount created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        images.unshift(res.data.data);
-
+        discountFinalProduct.unshift(res.data.data);
+        setNewDiscountFinalProduct({
+          client_id: clientID,
+          company_id: companyID,
+          discount_id: discountID,
+          category_id: "",
+          product_id: "",
+          final_product_id: "",
+        });
         setAddModal(false);
       })
       .catch((err) => {
@@ -184,34 +212,16 @@ function FinalProductImages(props) {
       });
   };
 
-  const handleUpload = async () => {
-    const formData = new FormData();
-    formData.append("file", file);
-    await axios
-      .post(`${base_url}/storage/file`, formData, {
-        headers: { Authorization: "Bearer " + sessionStorage.getItem("token") },
-      })
-      .then((res) => {
-        Toastify({
-          text: res.data.message,
-          style: {
-            background: "green",
-            color: "white",
-          },
-        }).showToast();
-        handleCreateImgFromFile({ fileId: res.data.data.id });
-      });
-  };
-
   // show
   const handleShow = async (id) => {
     setShowModal(true);
     const res = await axios.get(
-      `${base_url}/admin/company/category/product/final-product-image/${id}`,
+      `${base_url}/admin/company/accounting/discount-final-product/${id}`,
       config
     );
-    console.log("show", res.data.data);
     setSelectedItem(res.data.data);
+    console.log(
+      "show",res.data.data)
   };
 
   // close any modal
@@ -227,9 +237,9 @@ function FinalProductImages(props) {
 
       {/* variants */}
       {!loading && !wrongMessage && (
-        <div className="FinalProductImages">
+        <div className="DiscountFinalProduct">
           {/* header */}
-          <h1 className="header">{t("FinalProductImages")}</h1>
+          <h1 className="header">{t("DiscountFinalProduct")}</h1>
           {/* upper table */}
           <TableFilter
             handleAdd={handleAdd}
@@ -239,37 +249,33 @@ function FinalProductImages(props) {
               handleSearchReq(e, { queryString: e.target.value })
             }
           />
-
           {/* table */}
-          {images.length !== 0 ? (
+          {discountFinalProduct.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalImagesLength}
+              totalRecords={totalDiscountFinalProductsLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-
-              {images?.map((item, i) => (
+              {discountFinalProduct?.map((item, i) => (
                 <tr key={item.id}>
                   <td>{i + 1}</td>
-                  <td>
-                    <img src={item?.file?.file_path} alt="product img here" />
-                  </td>
+                  <td>{item.final_product?.details}</td>
+
                   {/* icons */}
                   <td className="icons">
                     {/* delete */}
                     <Link
                       className="delete"
                       to=""
-                      onClick={() => handleDelete(item?.id, props.item?.name)}
+                      onClick={() => handleDelete(item?.id, item?.name)}
                     >
                       <i className="ri-delete-bin-2-fill"></i>
                     </Link>
                     {/* show */}
-
                     <Link
                       className="show"
                       to=""
@@ -282,7 +288,7 @@ function FinalProductImages(props) {
               ))}
             </Table>
           ) : (
-            <NoData data="Image" />
+            <NoData data="Discount Final Product" />
           )}
           {/* modals */}
           {/* show modal */}
@@ -294,9 +300,11 @@ function FinalProductImages(props) {
           {/* add modal */}
           <ModalAdd
             show={addModal}
-            handleUpload={handleUpload}
-            handleFile={handleChangeFile}
+            companyID={companyID}
+            newDiscountFinalProduct={newDiscountFinalProduct}
             handleClose={handleClose}
+            handleChange={handleChange}
+            handleSubmitAdd={handleSubmitAdd}
           />
         </div>
       )}
@@ -306,4 +314,4 @@ function FinalProductImages(props) {
   );
 }
 
-export default FinalProductImages;
+export default DiscountFinalProduct;

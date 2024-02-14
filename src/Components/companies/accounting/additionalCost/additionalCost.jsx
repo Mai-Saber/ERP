@@ -1,58 +1,63 @@
 import React, { useState, useEffect } from "react";
 
-import Table from "../../../common/table/table";
-import "../../../common/show modal/showModal.css";
-import Loading from "../../../common/loading/loading";
-import NoData from "../../../common/noData/noData";
-import TableIcons from "../../../common/tableIcons/tableIcons";
-import WrongMessage from "../../../common/wrongMessage/wrongMessage";
-import { base_url, config } from "../../../service/service";
-
-import "./companies.css";
-import Buttons from "./buttons/buttons";
-import CompaniesFilters from "./companiesFilters/companiesFilters";
+import Table from "../../../../common/table/table";
+import TableFilter from "../../../../common/tableFilter/tableFilter";
+import "../../../../common/show modal/showModal.css";
+import Loading from "../../../../common/loading/loading";
+import TableIcons from "../../../../common/tableIcons/tableIcons";
+import NoData from "../../../../common/noData/noData";
+import WrongMessage from "../../../../common/wrongMessage/wrongMessage";
+import { base_url, config } from "../../../../service/service";
 
 import axios from "axios";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 import { useTranslation } from "react-i18next";
+
 import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
 
-function Companies(props) {
+function AdditionalCost(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
-  const [filterClients, setFilterClients] = useState([]);
+  const [companyID, setCompanyID] = useState(props.companyIDInApp);
+  const [clientID, setClientID] = useState(props.clientIdInApp);
   const [columnsHeader, setColumnsHeader] = useState([]);
-  const [companies, setCompanies] = useState([]);
-  const [totalCompaniesLength, setTotalCompaniesLength] = useState("");
+  const [additionalCost, setAdditionalCost] = useState([]);
+  const [totalAdditionalCostsLength, setTotalAdditionalCostsLength] =
+    useState("");
+
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
-  const [newCompany, setNewCompany] = useState({
+  const [newAdditionalCost, setNewAdditionalCost] = useState({
+    client_id: clientID,
+    company_id: companyID,
     name: "",
-    client_id: "",
+    details: "",
   });
   const { t } = useTranslation();
 
   // general
   useEffect(() => {
-    // get companies
-    const getCompanies = async () => {
-      const url = `${base_url}/admin/companies`;
+    console.log("AdditionalCost page");
+    // get contacts
+    const getAdditionalCost = async () => {
+      const url = `${base_url}/admin/company/accounting/additional-costs/${companyID}`;
       await axios
         .get(url)
         .then((res) => {
           setLoading(false);
-          setColumnsHeader(["Id","Name","Pages"]);
-          setCompanies(res.data.data);
-          setTotalCompaniesLength(res.data.meta?.total);
+          setColumnsHeader(["Id", "Company Name", "Name"]);
+          setAdditionalCost(res.data.data);
+          setTotalAdditionalCostsLength(res.data.meta?.total);
         })
         .catch((err) => {
+          console.log("err", err);
           // loading
           setTimeout(function () {
             setLoading(false);
@@ -61,25 +66,17 @@ function Companies(props) {
           setWrongMessage(true);
         });
     };
-
-    // get filter countries
-    const filterClients = async () => {
-      const res = await axios.get(`${base_url}/admin/clients`);
-      setFilterClients(res.data.data);
-    };
-
     // call functions
-    getCompanies();
-    filterClients();
+    getAdditionalCost();
   }, []);
 
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newCompany,
+      ...newAdditionalCost,
       [e.target.name]: e.target.value,
     };
-    setNewCompany(newData);
+    setNewAdditionalCost(newData);
 
     const newItem = {
       ...editItem,
@@ -88,9 +85,7 @@ function Companies(props) {
     setEditItem(newItem);
   };
 
-  // search & filter
   // search & filter & pagination
-
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [pageNumber, setPageNumber] = useState(0);
   const [searchRequestControls, setSearchRequestControls] = useState({
@@ -123,14 +118,14 @@ function Companies(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/companies/search?
+        `${base_url}/admin/company/accounting/additional-costs/search/${companyID}?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setCompanies(res.data.data);
+      setAdditionalCost(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -139,9 +134,12 @@ function Companies(props) {
   // delete
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
-      await axios.delete(`${base_url}/admin/company/${id}`, config);
-      const newRow = companies.filter((item) => item.id !== id);
-      setCompanies(newRow); // setRow(filterItems);
+      await axios.delete(
+        `${base_url}/admin/company/accounting/additional-cost/${id}`,
+        config
+      );
+      const newRow = additionalCost.filter((item) => item.id !== id);
+      setAdditionalCost(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -165,21 +163,26 @@ function Companies(props) {
     setAddModal(true);
   };
 
-  const handleSubmitAddCompanies = async () => {
+  const handleSubmitAddAdditionalBox = async () => {
     await axios
-      .post(`${base_url}/admin/company`, newCompany)
+      .post(
+        `${base_url}/admin/company/accounting/additional-cost`,
+        newAdditionalCost
+      )
       .then((res) => {
         Toastify({
-          text: `company created successfully `,
+          text: `box created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        companies.unshift(res.data.data);
-        setNewCompany({
+        additionalCost.unshift(res.data.data);
+        setNewAdditionalCost({
+          client_id: clientID,
+          company_id: companyID,
           name: "",
-          client_id: "",
+          details: "",
         });
         setAddModal(false);
       })
@@ -198,13 +201,18 @@ function Companies(props) {
   // show
   const handleShow = async (id) => {
     setShowModal(true);
-    const res = await axios.get(`${base_url}/admin/company/${id}`, config);
+    const res = await axios.get(
+      `${base_url}/admin/company/accounting/additional-cost/${id}`,
+      config
+    );
     setSelectedItem(res.data.data);
   };
 
   // edit
   const handleEdit = async (id) => {
-    const res = await axios.get(`${base_url}/admin/company/${id}`);
+    const res = await axios.get(
+      `${base_url}/admin/company/accounting/additional-cost/${id}`
+    );
     setEditItem(res.data.data);
     setEditModal(true);
   };
@@ -212,20 +220,21 @@ function Companies(props) {
   const handleSubmitEdit = async (id) => {
     const data = {
       name: editItem.name,
+      details: editItem.details,
     };
     await axios
-      .patch(`${base_url}/admin/company/${id}`, data)
+      .patch(`${base_url}/admin/company/accounting/additional-cost/${id}`, data)
       .then((res) => {
         Toastify({
-          text: `Company updated successfully`,
+          text: `box updated successfully`,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < companies.length; i++) {
-          if (companies[i].id === id) {
-            companies[i] = res.data.data;
+        for (let i = 0; i < additionalCost.length; i++) {
+          if (additionalCost[i].id === id) {
+            additionalCost[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -248,56 +257,45 @@ function Companies(props) {
     setAddModal(false);
     setEditModal(false);
   };
-
-  /////////////////////////////////////////////////
+  // ////////////////////////////////////////
   return (
     <>
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
-      {/* companies */}
+
+      {/* branches */}
       {!loading && !wrongMessage && (
-        <div className="companies">
+        <div className="AdditionalBox">
           {/* header */}
-          <h1 className="header">{t("Companies")}</h1>
+          <h1 className="header">{t("AdditionalBox")}</h1>
           {/* upper table */}
-          <CompaniesFilters
-            searchRequestControls={searchRequestControls}
-            filterClients={filterClients}
-            handleSearchReq={handleSearchReq}
+          <TableFilter
             handleAdd={handleAdd}
+            inputName="queryString"
+            inputValue={searchRequestControls.queryString}
+            handleChangeSearch={(e) =>
+              handleSearchReq(e, { queryString: e.target.value })
+            }
           />
           {/* table */}
-          {companies.length !== 0 ? (
+          {additionalCost.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalCompaniesLength}
+              totalRecords={totalAdditionalCostsLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {companies?.map((item, i) => (
+              {additionalCost?.map((item, i) => (
                 <tr key={item.id}>
                   <td>{i + 1}</td>
-                  <td className="name">{item.name} </td>
-                  {/* buttons */}
-                  <Buttons
-                    item={item}
-                    handleVariant={props.handleVariant}
-                    handleBranches={props.handleBranches}
-                    handleEmployee={props.handleEmployee}
-                    handleContacts={props.handleContacts}
-                    handleCategories={props.handleCategories}
-                    handlePriceList={props.handlePriceList}
-                    handleBankAccount={props.handleBankAccount}
-                    handleCashBox={props.handleCashBox}
-                    handleTax={props.handleTax}
-                    handleAdditionalBox={props.handleAdditionalBox}
-                    handleMeasurementUnit={props.handleMeasurementUnit}
-                    handleDiscount={props.handleDiscount}
-                    handleInvoices={props.handleInvoices}
-                  />
+
+                  <td className="name">{item.company?.name}</td>
+                  <td>{item.name}</td>
+                  <td>{item.details}</td>
+
                   {/* icons */}
                   <TableIcons
                     item={item}
@@ -309,7 +307,7 @@ function Companies(props) {
               ))}
             </Table>
           ) : (
-            <NoData data="company" />
+            <NoData data="Additional Box" />
           )}
           {/* modals */}
           {/* show modal */}
@@ -322,9 +320,9 @@ function Companies(props) {
           <ModalAdd
             show={addModal}
             handleClose={handleClose}
-            newCompany={newCompany}
+            newAdditionalCost={newAdditionalCost}
             handleChange={handleChange}
-            handleSubmitAddCompanies={handleSubmitAddCompanies}
+            handleSubmitAddAdditionalBox={handleSubmitAddAdditionalBox}
           />
           {/* edit modal */}
           <ModalEdit
@@ -336,10 +334,10 @@ function Companies(props) {
           />
         </div>
       )}
-      {/* WrongMessage */}
+      {/* wrong message */}
       {!loading && wrongMessage && <WrongMessage />}
     </>
   );
 }
 
-export default Companies;
+export default AdditionalCost;

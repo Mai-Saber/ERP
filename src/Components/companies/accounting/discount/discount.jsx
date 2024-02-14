@@ -16,50 +16,53 @@ import { useTranslation } from "react-i18next";
 
 import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
-import ModalEdit from "./modals/edit";
 import { Link } from "react-router-dom";
 
-function PriceList(props) {
+function Discount(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
   const [companyID, setCompanyID] = useState(props.companyIDInApp);
   const [clientID, setClientID] = useState(props.clientIdInApp);
   const [columnsHeader, setColumnsHeader] = useState([]);
-  const [priceLists, setPriceLists] = useState([]);
-  const [totalListsLength, setTotalListsLength] = useState("");
+  const [discount, setDiscount] = useState([]);
+  const [totalDiscountsLength, setTotalDiscountsLength] = useState("");
 
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
-  const [editModal, setEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
-  const [editItem, setEditItem] = useState({});
-  const [newPriceList, setNewPriceList] = useState({
+  const [newDiscount, setNewDiscount] = useState({
     client_id: clientID,
     company_id: companyID,
     name: "",
+    details: "",
+    date_from: "",
+    date_to: "",
+    dicount_percentage: "",
+    category_id: "",
+    product_id: "",
+    final_product_id: "",
+    branch_ids: [],
   });
   const { t } = useTranslation();
 
   // general
   useEffect(() => {
-    console.log("price list page");
-    console.log("url", `${base_url}/admin/company/price-lists/${companyID}`);
-
-    // get priceLists
-    const getPriceLists = async () => {
-      const url = `${base_url}/admin/company/price-lists/${companyID}`;
+    console.log("discount page", companyID);
+    // get contacts
+    const getDiscount = async () => {
+      const url = `${base_url}/admin/company/accounting/discounts/${companyID}`;
       await axios
         .get(url)
         .then((res) => {
-          console.log("response", res);
           setLoading(false);
-          setColumnsHeader(["Id", "Company Name", "priceList Name"]);
-          setPriceLists(res.data.data);
-          setTotalListsLength(res.data.meta?.total);
+          setColumnsHeader(["Id", "Company Name", "Name", "Details"]);
+          setDiscount(res.data.data);
+          console.log("res", res.data.data);
+          setTotalDiscountsLength(res.data.meta?.total);
         })
         .catch((err) => {
-          console.log("err", err)
+          console.log("err", err);
           // loading
           setTimeout(function () {
             setLoading(false);
@@ -69,22 +72,16 @@ function PriceList(props) {
         });
     };
     // call functions
-    getPriceLists();
+    getDiscount();
   }, []);
 
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newPriceList,
+      ...newDiscount,
       [e.target.name]: e.target.value,
     };
-    setNewPriceList(newData);
-
-    const newItem = {
-      ...editItem,
-      [e.target.name]: e.target.value,
-    };
-    setEditItem(newItem);
+    setNewDiscount(newData);
   };
 
   // search & filter & pagination
@@ -120,14 +117,14 @@ function PriceList(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/company/price-lists/search/${companyID}?
+        `${base_url}/admin/company/accounting/discounts/search/${companyID}?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setPriceLists(res.data.data);
+      setDiscount(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -136,9 +133,12 @@ function PriceList(props) {
   // delete
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
-      await axios.delete(`${base_url}/admin/company/price-list/${id}`, config);
-      const newRow = priceLists.filter((item) => item.id !== id);
-      setPriceLists(newRow); // setRow(filterItems);
+      await axios.delete(
+        `${base_url}/admin/company/accounting/discount/${id}`,
+        config
+      );
+      const newRow = discount.filter((item) => item.id !== id);
+      setDiscount(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -162,23 +162,48 @@ function PriceList(props) {
     setAddModal(true);
   };
 
-  const handleSubmitAddPriceList = async () => {
-    console.log("branch", newPriceList);
+  const handleSubmitAdd = async () => {
+    const data = {
+      client_id: clientID,
+      company_id: companyID,
+      name: newDiscount.name,
+      details: newDiscount.details,
+      date_from: newDiscount.date_from,
+      date_to: newDiscount.date_to,
+      dicount_percentage: newDiscount.dicount_percentage,
+      final_products: [
+        {
+          category_id: newDiscount.category_id,
+          product_id: newDiscount.product_id,
+          final_product_id: newDiscount.final_product_id,
+        },
+      ],
+      branch_ids: [newDiscount.branch_ids],
+    };
+    console.log("data", data);
     await axios
-      .post(`${base_url}/admin/company/price-list`, newPriceList)
+      .post(`${base_url}/admin/company/accounting/discount`, data)
       .then((res) => {
         Toastify({
-          text: `price-list created successfully `,
+          text: `Discount created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        priceLists.unshift(res.data.data);
-        setNewPriceList({
+        discount.unshift(res.data.data);
+        setNewDiscount({
           client_id: clientID,
           company_id: companyID,
           name: "",
+          details: "",
+          date_from: "",
+          date_to: "",
+          dicount_percentage: "",
+          category_id: "",
+          product_id: "",
+          final_product_id: "",
+          branch_ids: [],
         });
         setAddModal(false);
       })
@@ -198,57 +223,18 @@ function PriceList(props) {
   const handleShow = async (id) => {
     setShowModal(true);
     const res = await axios.get(
-      `${base_url}/admin/company/price-list/${id}`,
+      `${base_url}/admin/company/accounting/discount/${id}`,
       config
     );
     setSelectedItem(res.data.data);
-  };
+        console.log("show", res.data.data);
 
-  // edit
-  const handleEdit = async (id) => {
-    const res = await axios.get(`${base_url}/admin/company/price-list/${id}`);
-    setEditItem(res.data.data);
-    setEditModal(true);
-  };
-
-  const handleSubmitEdit = async (id) => {
-    const data = {
-      name: editItem.name,
-    };
-    await axios
-      .patch(`${base_url}/admin/company/price-list/${id}`, data)
-      .then((res) => {
-        Toastify({
-          text: `price-list updated successfully`,
-          style: {
-            background: "green",
-            color: "white",
-          },
-        }).showToast();
-        for (let i = 0; i < priceLists.length; i++) {
-          if (priceLists[i].id === id) {
-            priceLists[i] = res.data.data;
-          }
-        }
-        setEditItem({});
-        setEditModal(false);
-      })
-      .catch((err) => {
-        Toastify({
-          text: `${err.response.data.message}`,
-          style: {
-            background: "red",
-            color: "white",
-          },
-        }).showToast();
-      });
   };
 
   // close any modal
   const handleClose = () => {
     setShowModal(false);
     setAddModal(false);
-    setEditModal(false);
   };
   // ////////////////////////////////////////
   return (
@@ -258,9 +244,9 @@ function PriceList(props) {
 
       {/* branches */}
       {!loading && !wrongMessage && (
-        <div className="price-list">
+        <div className="discount">
           {/* header */}
-          <h1 className="header">{t("PriceList")}</h1>
+          <h1 className="header">{t("Discount")}</h1>
           {/* upper table */}
           <TableFilter
             handleAdd={handleAdd}
@@ -271,50 +257,79 @@ function PriceList(props) {
             }
           />
           {/* table */}
-          {priceLists.length !== 0 ? (
+          {discount.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalListsLength}
+              totalRecords={totalDiscountsLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {priceLists?.map((item, i) => (
+              {discount?.map((item, i) => (
                 <tr key={item.id}>
                   <td>{i + 1}</td>
 
                   <td className="name">{item.company?.name}</td>
                   <td>{item.name}</td>
+                  <td>{item.details}</td>
+                  {/* Discount Final Product */}
                   <td>
                     <Link
-                      to="/companies/priceList/priceListProduct"
+                      to="/companies/discount/discountFinalProduct"
                       className="btn btn-primary"
                       onClick={() =>
-                        props.handlePriceListProduct(
+                        props.handleDiscountFinalProduct(
                           item?.id,
-                          item?.client_id,
-                          item?.company_id
+                          item?.company?.client_id,
+                          item?.company?.id
                         )
                       }
                     >
-                      {t("PriceListProduct")}
+                      {t("DiscountFinalProduct")}
                     </Link>
                   </td>
-
+                  {/* Discount Branch */}
+                  <td>
+                    <Link
+                      to="/companies/discount/discountBranch"
+                      className="btn btn-primary"
+                      onClick={() =>
+                        props.handleDiscountBranch(
+                          item?.id,
+                          item?.company?.client_id,
+                          item?.company?.id
+                        )
+                      }
+                    >
+                      {t("DiscountBranch")}
+                    </Link>
+                  </td>
                   {/* icons */}
-                  <TableIcons
-                    item={item}
-                    handleDelete={handleDelete}
-                    handleEdit={handleEdit}
-                    handleShow={handleShow}
-                  />
+                  <td className="icons">
+                    {/* delete */}
+                    <Link
+                      className="delete"
+                      to=""
+                      onClick={() => handleDelete(item?.id, item?.name)}
+                    >
+                      <i className="ri-delete-bin-2-fill"></i>
+                    </Link>
+                    {/* show */}
+                    <Link
+                      className="show"
+                      to=""
+                      onClick={() => handleShow(item?.id)}
+                    >
+                      <i className="ri-eye-line"></i>
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </Table>
           ) : (
-            <NoData data="price Lists" />
+            <NoData data="Discounts" />
           )}
           {/* modals */}
           {/* show modal */}
@@ -327,17 +342,10 @@ function PriceList(props) {
           <ModalAdd
             show={addModal}
             handleClose={handleClose}
-            newPriceList={newPriceList}
+            companyID={companyID}
+            newDiscount={newDiscount}
             handleChange={handleChange}
-            handleSubmitAddPriceList={handleSubmitAddPriceList}
-          />
-          {/* edit modal */}
-          <ModalEdit
-            show={editModal}
-            handleClose={handleClose}
-            editItem={editItem}
-            handleChange={handleChange}
-            handleSubmitEdit={handleSubmitEdit}
+            handleSubmitAdd={handleSubmitAdd}
           />
         </div>
       )}
@@ -347,4 +355,4 @@ function PriceList(props) {
   );
 }
 
-export default PriceList;
+export default Discount;

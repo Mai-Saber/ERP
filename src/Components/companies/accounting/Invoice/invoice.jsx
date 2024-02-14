@@ -1,58 +1,79 @@
 import React, { useState, useEffect } from "react";
 
-import Table from "../../../common/table/table";
-import "../../../common/show modal/showModal.css";
-import Loading from "../../../common/loading/loading";
-import NoData from "../../../common/noData/noData";
-import TableIcons from "../../../common/tableIcons/tableIcons";
-import WrongMessage from "../../../common/wrongMessage/wrongMessage";
-import { base_url, config } from "../../../service/service";
-
-import "./companies.css";
-import Buttons from "./buttons/buttons";
-import CompaniesFilters from "./companiesFilters/companiesFilters";
+import Table from "../../../../common/table/table";
+import TableFilter from "../../../../common/tableFilter/tableFilter";
+import "../../../../common/show modal/showModal.css";
+import Loading from "../../../../common/loading/loading";
+import TableIcons from "../../../../common/tableIcons/tableIcons";
+import NoData from "../../../../common/noData/noData";
+import WrongMessage from "../../../../common/wrongMessage/wrongMessage";
+import { base_url, config } from "../../../../service/service";
 
 import axios from "axios";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 import { useTranslation } from "react-i18next";
+
 import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
 
-function Companies(props) {
+function Invoice(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
-  const [filterClients, setFilterClients] = useState([]);
+  const [companyID, setCompanyID] = useState(props.companyIDInApp);
+  const [clientID, setClientID] = useState(props.clientIdInApp);
   const [columnsHeader, setColumnsHeader] = useState([]);
-  const [companies, setCompanies] = useState([]);
-  const [totalCompaniesLength, setTotalCompaniesLength] = useState("");
+  const [invoices, setInvoices] = useState([]);
+  const [totalInvoicesLength, setTotalInvoicesLength] = useState("");
+
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
-  const [newCompany, setNewCompany] = useState({
+  const [newInvoices, setNewInvoices] = useState({
+    client_id: clientID,
+    company_id: companyID,
+    branch_id: "",
+    employee_id: "",
+    contact_id: "",
+    type_id: "",
+    payment_type_id: "",
+    payment_method_id: "",
     name: "",
-    client_id: "",
+    details: "",
+
+    category_id: "",
+    product_id: "",
+    final_product_id: "",
+    measurement_unit_id: "",
+    unit_price: "",
+    count: "",
+    tax_ids: [],
+
+    additional_cost_id: "",
+    value: "",
   });
   const { t } = useTranslation();
 
   // general
   useEffect(() => {
-    // get companies
-    const getCompanies = async () => {
-      const url = `${base_url}/admin/companies`;
+    console.log("Invoices page");
+    // get Invoices
+    const getInvoices = async () => {
+      const url = `${base_url}/admin/company/accounting/invoices/${companyID}`;
       await axios
         .get(url)
         .then((res) => {
           setLoading(false);
-          setColumnsHeader(["Id","Name","Pages"]);
-          setCompanies(res.data.data);
-          setTotalCompaniesLength(res.data.meta?.total);
+          setColumnsHeader(["Id", "Company Name", "Name"]);
+          setInvoices(res.data.data);
+          setTotalInvoicesLength(res.data.meta?.total);
         })
         .catch((err) => {
+          console.log("err", err);
           // loading
           setTimeout(function () {
             setLoading(false);
@@ -61,25 +82,17 @@ function Companies(props) {
           setWrongMessage(true);
         });
     };
-
-    // get filter countries
-    const filterClients = async () => {
-      const res = await axios.get(`${base_url}/admin/clients`);
-      setFilterClients(res.data.data);
-    };
-
     // call functions
-    getCompanies();
-    filterClients();
+    getInvoices();
   }, []);
 
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newCompany,
+      ...newInvoices,
       [e.target.name]: e.target.value,
     };
-    setNewCompany(newData);
+    setNewInvoices(newData);
 
     const newItem = {
       ...editItem,
@@ -88,9 +101,7 @@ function Companies(props) {
     setEditItem(newItem);
   };
 
-  // search & filter
   // search & filter & pagination
-
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [pageNumber, setPageNumber] = useState(0);
   const [searchRequestControls, setSearchRequestControls] = useState({
@@ -123,14 +134,14 @@ function Companies(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/companies/search?
+        `${base_url}/admin/company/accounting/invoices/search/${companyID}?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setCompanies(res.data.data);
+      setInvoices(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -139,9 +150,12 @@ function Companies(props) {
   // delete
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
-      await axios.delete(`${base_url}/admin/company/${id}`, config);
-      const newRow = companies.filter((item) => item.id !== id);
-      setCompanies(newRow); // setRow(filterItems);
+      await axios.delete(
+        `${base_url}/admin/company/accounting/invoice/${id}`,
+        config
+      );
+      const newRow = invoices.filter((item) => item.id !== id);
+      setInvoices(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -165,21 +179,76 @@ function Companies(props) {
     setAddModal(true);
   };
 
-  const handleSubmitAddCompanies = async () => {
+  const handleSubmitAdd = async () => {
+    const data = {
+      client_id: newInvoices.clientID,
+      company_id: newInvoices.companyID,
+      branch_id: newInvoices.branch_id,
+      employee_id: newInvoices.employee_id,
+      contact_id: newInvoices.contact_id,
+      type_id: newInvoices.type_id,
+      payment_type_id: newInvoices.payment_type_id,
+      payment_method_id: newInvoices.payment_method_id,
+      name: newInvoices.name,
+      details: newInvoices.details,
+      final_products: [
+        {
+          category_id: newInvoices.category_id,
+          product_id: newInvoices.product_id,
+          final_product_id: newInvoices.final_product_id,
+          measurement_unit_id: newInvoices.measurement_unit_id,
+          unit_price: newInvoices.unit_price,
+          count: newInvoices.count,
+        },
+      ],
+      tax_ids: newInvoices.tax_ids,
+      additional_costs: [
+        {
+          additional_cost_id: newInvoices.additional_cost_id,
+          value: newInvoices.value,
+        },
+      ],
+    };
+
     await axios
-      .post(`${base_url}/admin/company`, newCompany)
+      .post(`${base_url}/admin/company/accounting/invoice`, data)
       .then((res) => {
         Toastify({
-          text: `company created successfully `,
+          text: `invoice created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        companies.unshift(res.data.data);
-        setNewCompany({
+        invoices.unshift(res.data.data);
+        setNewInvoices({
+          client_id: clientID,
+          company_id: companyID,
+          branch_id: "",
+          employee_id: "",
+          contact_id: "",
+          type_id: "",
+          payment_type_id: "",
+          payment_method_id: "",
           name: "",
-          client_id: "",
+          details: "",
+          final_products: [
+            {
+              category_id: "",
+              product_id: "",
+              final_product_id: "",
+              measurement_unit_id: "",
+              unit_price: 10,
+              count: 100,
+            },
+          ],
+          tax_ids: [],
+          additional_costs: [
+            {
+              additional_cost_id: "",
+              value: "",
+            },
+          ],
         });
         setAddModal(false);
       })
@@ -198,34 +267,42 @@ function Companies(props) {
   // show
   const handleShow = async (id) => {
     setShowModal(true);
-    const res = await axios.get(`${base_url}/admin/company/${id}`, config);
+    const res = await axios.get(
+      `${base_url}/admin/company/accounting/invoice/${id}`,
+      config
+    );
     setSelectedItem(res.data.data);
   };
 
   // edit
   const handleEdit = async (id) => {
-    const res = await axios.get(`${base_url}/admin/company/${id}`);
+    const res = await axios.get(
+      `${base_url}/admin/company/accounting/invoice/${id}`
+    );
     setEditItem(res.data.data);
     setEditModal(true);
   };
 
   const handleSubmitEdit = async (id) => {
     const data = {
+      contact_id: editItem.contact_id,
+      type_id: editItem.type_id,
       name: editItem.name,
+      details: editItem.details,
     };
     await axios
-      .patch(`${base_url}/admin/company/${id}`, data)
+      .patch(`${base_url}/admin/company/accounting/invoice/${id}`, data)
       .then((res) => {
         Toastify({
-          text: `Company updated successfully`,
+          text: `invoices updated successfully`,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < companies.length; i++) {
-          if (companies[i].id === id) {
-            companies[i] = res.data.data;
+        for (let i = 0; i < invoices.length; i++) {
+          if (invoices[i].id === id) {
+            invoices[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -248,56 +325,45 @@ function Companies(props) {
     setAddModal(false);
     setEditModal(false);
   };
-
-  /////////////////////////////////////////////////
+  // ////////////////////////////////////////
   return (
     <>
       {/* loading spinner*/}
       {loading && <Loading></Loading>}
-      {/* companies */}
+
+      {/* branches */}
       {!loading && !wrongMessage && (
-        <div className="companies">
+        <div className="invoices">
           {/* header */}
-          <h1 className="header">{t("Companies")}</h1>
+          <h1 className="header">{t("Invoices")}</h1>
           {/* upper table */}
-          <CompaniesFilters
-            searchRequestControls={searchRequestControls}
-            filterClients={filterClients}
-            handleSearchReq={handleSearchReq}
+          <TableFilter
             handleAdd={handleAdd}
+            inputName="queryString"
+            inputValue={searchRequestControls.queryString}
+            handleChangeSearch={(e) =>
+              handleSearchReq(e, { queryString: e.target.value })
+            }
           />
           {/* table */}
-          {companies.length !== 0 ? (
+          {invoices.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalCompaniesLength}
+              totalRecords={totalInvoicesLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {companies?.map((item, i) => (
+              {invoices?.map((item, i) => (
                 <tr key={item.id}>
                   <td>{i + 1}</td>
-                  <td className="name">{item.name} </td>
-                  {/* buttons */}
-                  <Buttons
-                    item={item}
-                    handleVariant={props.handleVariant}
-                    handleBranches={props.handleBranches}
-                    handleEmployee={props.handleEmployee}
-                    handleContacts={props.handleContacts}
-                    handleCategories={props.handleCategories}
-                    handlePriceList={props.handlePriceList}
-                    handleBankAccount={props.handleBankAccount}
-                    handleCashBox={props.handleCashBox}
-                    handleTax={props.handleTax}
-                    handleAdditionalBox={props.handleAdditionalBox}
-                    handleMeasurementUnit={props.handleMeasurementUnit}
-                    handleDiscount={props.handleDiscount}
-                    handleInvoices={props.handleInvoices}
-                  />
+
+                  <td className="name">{item.company?.name}</td>
+                  <td>{item.name}</td>
+                  <td>{item.details}</td>
+
                   {/* icons */}
                   <TableIcons
                     item={item}
@@ -309,7 +375,7 @@ function Companies(props) {
               ))}
             </Table>
           ) : (
-            <NoData data="company" />
+            <NoData data="Invoices" />
           )}
           {/* modals */}
           {/* show modal */}
@@ -322,9 +388,9 @@ function Companies(props) {
           <ModalAdd
             show={addModal}
             handleClose={handleClose}
-            newCompany={newCompany}
+            newInvoices={newInvoices}
             handleChange={handleChange}
-            handleSubmitAddCompanies={handleSubmitAddCompanies}
+            handleSubmitAdd={handleSubmitAdd}
           />
           {/* edit modal */}
           <ModalEdit
@@ -336,10 +402,10 @@ function Companies(props) {
           />
         </div>
       )}
-      {/* WrongMessage */}
+      {/* wrong message */}
       {!loading && wrongMessage && <WrongMessage />}
     </>
   );
 }
 
-export default Companies;
+export default Invoice;

@@ -52,7 +52,8 @@ function Clients(props) {
         .get(url)
         .then((res) => {
           setLoading(false);
-          setColumnsHeader(["Id","Name", "Email", "Phone"]);
+          setColumnsHeader(["Id", "Name", "Email", "Phone"]);
+          
           setClients(res.data.data);
           setTotalClientsLength(res.data.meta?.total);
         })
