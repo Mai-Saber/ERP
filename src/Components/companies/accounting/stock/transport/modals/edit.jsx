@@ -12,40 +12,26 @@ import MenuItem from "@mui/material/MenuItem";
 
 function ModalEdit(props) {
   const { t } = useTranslation();
-  const [contacts, setContacts] = useState([]);
-  const [types, setTypes] = useState([]);
+  const [warehouse, setWarehouse] = useState([]);
 
   useEffect(() => {
-    const getContacts = async () => {
+    const getWareHouse = async () => {
       await axios
-        .get(`${base_url}/admin/company/contacts/${props.companyID}`)
+        .get(`${base_url}/admin/company/branch/warehouses/${props.companyID}`)
         .then((res) => {
-          setContacts(res.data.data);
+          setWarehouse(res.data.data);
 
           console.log("res", res);
         })
         .catch((err) => console.log(err));
     };
-
-    const getTypes = async () => {
-      await axios
-        .get(`${base_url}/admin/company/contacts/${props.companyID}`)
-        .then((res) => {
-          setTypes(res.data.data);
-
-          console.log("res", res);
-        })
-        .catch((err) => console.log(err));
-    };
-
-    getContacts();
-    getTypes();
+    getWareHouse();
   }, []);
 
   return (
     <Modal show={props.show} onHide={props.handleClose} className="Modal">
       <Modal.Header closeButton>
-        <Modal.Title>{t("EditInvoice")}</Modal.Title>
+        <Modal.Title>{t("EditTransport")}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <form action="post">
@@ -60,7 +46,7 @@ function ModalEdit(props) {
             value={props.editItem?.name}
             onChange={props.handleChange}
           />
-          
+
           <TextField
             className="input"
             id="outlined-basic"
@@ -71,42 +57,42 @@ function ModalEdit(props) {
             value={props.editItem?.details}
             onChange={props.handleChange}
           />
-          {/* contact */}
-          <InputLabel id="demo-simple-select-label">{t("contact")} </InputLabel>
+          {/* from */}
+          <InputLabel id="demo-simple-select-label">{t("from warehouse")} </InputLabel>
           <Select
             className="input"
             labelId="demo-simple-select-label"
             id="demo-simple-select"
-            name="contact_id"
-            value={props.editItem?.contact_id}
-            label={t("contact")}
+            name="from_warehouse_id"
+            value={props.editItem?.from_warehouse_id}
+            label={t("from warehouse")}
             onChange={props.handleChange}
           >
-            {contacts?.map((el) => (
+            {warehouse?.map((el) => (
+              <MenuItem key={el.id} value={el.id}>
+                {t(el.name)}
+              </MenuItem>
+            ))}
+          </Select>
+          {/* to */}
+          <InputLabel id="demo-simple-select-label">{t("to warehouse")} </InputLabel>
+          <Select
+            className="input"
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            name="to_warehouse_id"
+            value={props.editItem?.to_warehouse_id}
+            label={t("to warehouse")}
+            onChange={props.handleChange}
+          >
+            {warehouse?.map((el) => (
               <MenuItem key={el.id} value={el.id}>
                 {t(el.name)}
               </MenuItem>
             ))}
           </Select>
 
-          {/* type_id */}
-          <InputLabel id="demo-simple-select-label">{t("type_id")} </InputLabel>
-          <Select
-            className="input"
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            name="type_id"
-            value={props.editItem?.type_id}
-            label={t("type")}
-            onChange={props.handleChange}
-          >
-            {types?.map((el) => (
-              <MenuItem key={el.id} value={el.id}>
-                {t(el.name)}
-              </MenuItem>
-            ))}
-          </Select>
-
+          
         </form>
       </Modal.Body>
       <Modal.Footer>

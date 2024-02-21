@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 
-import NoData from "../../../../../common/noData/noData";
-import Table from "../../../../../common/table/table";
-import "../../../../../common/show modal/showModal.css";
-import TableFilter from "../../../../../common/tableFilter/tableFilter";
-import Loading from "../../../../../common/loading/loading";
-import WrongMessage from "../../../../../common/wrongMessage/wrongMessage";
-import { base_url, config } from "../../../../../service/service";
+import NoData from "../../../../../../common/noData/noData";
+import Table from "../../../../../../common/table/table";
+import "../../../../../../common/show modal/showModal.css";
+import TableFilter from "../../../../../../common/tableFilter/tableFilter";
+import Loading from "../../../../../../common/loading/loading";
+import WrongMessage from "../../../../../../common/wrongMessage/wrongMessage";
+import { base_url, config } from "../../../../../../service/service";
 
 import axios from "axios";
 import Toastify from "toastify-js";
@@ -17,24 +17,24 @@ import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
 import { Link } from "react-router-dom";
 
-function RefundFinalProducts(props) {
+function TransportFinalProducts(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
   const [companyID, setCompanyID] = useState(props.companyIDInApp);
   const [clientID, setClientID] = useState(props.clientIdInApp);
-  const [refundID, setRefundID] = useState(props.refundIdInApp);
+  const [transportID, setRefundID] = useState(props.refundIdInApp);
   const [columnsHeader, setColumnsHeader] = useState([]);
-  const [refundFinalProducts, setRefundFinalProducts] = useState([]);
-  const [totalRefundsLength, setTotalRefundsLength] = useState("");
+  const [transportFinalProducts, setTransportFinalProducts] = useState([]);
+  const [totalLength, setTotalLength] = useState("");
 
   //modals
   const [showModal, setShowModal] = useState(false);
   const [addModal, setAddModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
-  const [newRefundFinalProducts, setNewRefundFinalProducts] = useState({
+  const [newTransportFinalProducts, setNewTransportFinalProducts] = useState({
     client_id: clientID,
     company_id: companyID,
-    refund_id: refundID,
+    transport_request_id: transportID,
 
     category_id: "",
     product_id: "",
@@ -48,17 +48,17 @@ function RefundFinalProducts(props) {
   // general
   useEffect(() => {
     // getRefundFinalProducts
-    const getRefundFinalProducts = async () => {
+    const getTransportFinalProducts = async () => {
       try {
-        const url = `${base_url}/admin/company/accounting/refund-final-products/${refundID}`;
+        const url = `${base_url}/admin/company/accounting/stock-management/transport-request-final-products/${transportID}`;
         await axios
           .get(url)
           .then((res) => {
             setLoading(false);
             console.log("res", res.data.data);
-            setColumnsHeader(["Id", "Invoice Name", "Invoice Tax"]);
-            setRefundFinalProducts(res.data.data);
-            setTotalRefundsLength(res.data.meta?.total);
+            setColumnsHeader(["Id", "transport Name", "final"]);
+            setTransportFinalProducts(res.data.data);
+            setTotalLength(res.data.meta?.total);
           })
           .catch((err) => {
             // loading
@@ -73,16 +73,16 @@ function RefundFinalProducts(props) {
       }
     };
     // call functions
-    getRefundFinalProducts();
+    getTransportFinalProducts();
   }, []);
 
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newRefundFinalProducts,
+      ...newTransportFinalProducts,
       [e.target.name]: e.target.value,
     };
-    setNewRefundFinalProducts(newData);
+    setNewTransportFinalProducts(newData);
   };
 
   // search & filter & pagination
@@ -119,14 +119,14 @@ function RefundFinalProducts(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/company/accounting/refund-final-products/search/${refundID}?
+        `${base_url}/admin/company/accounting/stock-management/transport-request-final-products/search/${transportID}?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setRefundFinalProducts(res.data.data);
+      setTransportFinalProducts(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -136,11 +136,11 @@ function RefundFinalProducts(props) {
   const handleDelete = async ({ id, value }) => {
     if (window.confirm("Are you Sure? ")) {
       await axios.delete(
-        `${base_url}/admin/company/accounting/refund-final-product/${id}`,
+        `${base_url}/admin/company/accounting/stock-management/transport-request-final-product/${id}`,
         config
       );
-      const newRow = refundFinalProducts.filter((item) => item.id !== id);
-      setRefundFinalProducts(newRow); // setRow(filterItems);
+      const newRow = transportFinalProducts.filter((item) => item.id !== id);
+      setTransportFinalProducts(newRow); // setRow(filterItems);
       Toastify({
         text: `${value} deleted `,
         style: {
@@ -166,37 +166,37 @@ function RefundFinalProducts(props) {
 
   const handleSubmitAdd = async () => {
     const data = {
-      client_id: newRefundFinalProducts.clientID,
-      company_id: newRefundFinalProducts.companyID,
-     refund_id:newRefundFinalProducts.refund_id,
+      client_id: newTransportFinalProducts.clientID,
+      company_id: newTransportFinalProducts.companyID,
+     transport_request_id:newTransportFinalProducts.transport_request_id,
       final_products: [
         {
-          category_id: newRefundFinalProducts.category_id,
-          product_id: newRefundFinalProducts.product_id,
-          final_product_id: newRefundFinalProducts.final_product_id,
-          measurement_unit_id: newRefundFinalProducts.measurement_unit_id,
-          unit_price: newRefundFinalProducts.unit_price,
-          count: newRefundFinalProducts.count,
+          category_id: newTransportFinalProducts.category_id,
+          product_id: newTransportFinalProducts.product_id,
+          final_product_id: newTransportFinalProducts.final_product_id,
+          measurement_unit_id: newTransportFinalProducts.measurement_unit_id,
+          unit_price: newTransportFinalProducts.unit_price,
+          count: newTransportFinalProducts.count,
         },
       ],
     };
 
 
     await axios
-      .post(`${base_url}/admin/company/accounting/refund-final-product`, data)
+      .post(`${base_url}/admin/company/accounting/stock-management/transport-request-final-product`, data)
       .then((res) => {
         Toastify({
-          text: `refund created successfully `,
+          text: `transport created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        refundFinalProducts.unshift(res.data.data);
-        setNewRefundFinalProducts({
+        transportFinalProducts.unshift(res.data.data);
+        setNewTransportFinalProducts({
           client_id: clientID,
           company_id: companyID,
-          refund_id: refundID,
+          transport_request_id: transportID,
 
           category_id: "",
           product_id: "",
@@ -223,7 +223,7 @@ function RefundFinalProducts(props) {
   const handleShow = async (id) => {
     setShowModal(true);
     const res = await axios.get(
-      `${base_url}/admin/company/accounting/refund-final-product/${id}`,
+      `${base_url}/admin/company/accounting/stock-management/transport-request-final-product/${id}`,
       config
     );
     setSelectedItem(res.data.data);
@@ -242,9 +242,9 @@ function RefundFinalProducts(props) {
 
       {/* variants */}
       {!loading && !wrongMessage && (
-        <div className="refundFinalProducts">
+        <div className="transportFinalProducts">
           {/* header */}
-          <h1 className="header">{t("RefundFinalProducts")}</h1>
+          <h1 className="header">{t("TransportFinalProducts")}</h1>
           {/* upper table */}
           <TableFilter
             handleAdd={handleAdd}
@@ -255,17 +255,17 @@ function RefundFinalProducts(props) {
             }
           />
           {/* table */}
-          {refundFinalProducts.length !== 0 ? (
+          {transportFinalProducts.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalRefundsLength}
+              totalRecords={totalLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {refundFinalProducts?.map((item, i) => (
+              {transportFinalProducts?.map((item, i) => (
                 <tr key={item.id}>
                   <td>{i + 1}</td>
                   <td>{item.value}</td>
@@ -293,7 +293,7 @@ function RefundFinalProducts(props) {
               ))}
             </Table>
           ) : (
-            <NoData data="Refund Final products" />
+            <NoData data="transport Final products" />
           )}
           {/* modals */}
           {/* show modal */}
@@ -305,7 +305,7 @@ function RefundFinalProducts(props) {
           {/* add modal */}
           <ModalAdd
             show={addModal}
-            newRefundFinalProducts={newRefundFinalProducts}
+            newTransportFinalProducts={newTransportFinalProducts}
             companyID={companyID}
             handleClose={handleClose}
             handleChange={handleChange}
@@ -319,4 +319,4 @@ function RefundFinalProducts(props) {
   );
 }
 
-export default RefundFinalProducts;
+export default TransportFinalProducts;

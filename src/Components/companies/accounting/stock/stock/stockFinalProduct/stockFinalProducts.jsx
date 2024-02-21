@@ -17,7 +17,7 @@ import ModalShow from "./modals/show";
 import ModalAdd from "./modals/add";
 import { Link } from "react-router-dom";
 
-function RefundFinalProducts(props) {
+function StockFinalProducts(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
   const [companyID, setCompanyID] = useState(props.companyIDInApp);
@@ -321,4 +321,4 @@ function RefundFinalProducts(props) {
   );
 }
 
-export default RefundFinalProducts;
+export default StockFinalProducts;

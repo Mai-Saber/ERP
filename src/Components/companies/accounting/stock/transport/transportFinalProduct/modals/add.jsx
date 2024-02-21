@@ -66,7 +66,7 @@ function ModalAdd(props) {
   return (
     <Modal show={props.show} onHide={props.handleClose} className="Modal">
       <Modal.Header closeButton>
-        <Modal.Title> {t("AddNewRefundFinalProducts")}</Modal.Title>
+        <Modal.Title> {t("AddNewTransportFinalProducts")}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <form action="post">
@@ -82,7 +82,7 @@ function ModalAdd(props) {
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 name="category_id"
-                value={props.newRefundFinalProducts?.category_id}
+                value={props.newTransportFinalProducts?.category_id}
                 label={t("Category")}
                 onChange={(e) => {
                   getProducts(e);
@@ -106,7 +106,7 @@ function ModalAdd(props) {
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 name="product_id"
-                value={props.newRefundFinalProducts?.product_id}
+                value={props.newTransportFinalProducts?.product_id}
                 label={t("Product")}
                 onChange={(e) => {
                   getFinalProducts(e);
@@ -130,7 +130,7 @@ function ModalAdd(props) {
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 name="final_product_id"
-                value={props.newRefundFinalProducts?.final_product_id}
+                value={props.newTransportFinalProducts?.final_product_id}
                 label={t("FinalProduct")}
                 onChange={props.handleChange}
               >
@@ -151,7 +151,7 @@ function ModalAdd(props) {
             labelId="demo-simple-select-label"
             id="demo-simple-select"
             name="measurement_unit_id"
-            value={props.newRefundFinalProducts?.measurement_unit_id}
+            value={props.newTransportFinalProducts?.measurement_unit_id}
             label={t("MeasurementUnit")}
             onChange={props.handleChange}
           >
@@ -170,7 +170,7 @@ function ModalAdd(props) {
             type="text"
             label={t("UnitPrice")}
             name="unit_price"
-            value={props.newRefundFinalProducts?.unit_price}
+            value={props.newTransportFinalProducts?.unit_price}
             onChange={props.handleChange}
           />
           {/* count */}
@@ -182,7 +182,7 @@ function ModalAdd(props) {
             type="text"
             label={t("count")}
             name="count"
-            value={props.newRefundFinalProducts?.count}
+            value={props.newTransportFinalProducts?.count}
             onChange={props.handleChange}
           />
         </form>

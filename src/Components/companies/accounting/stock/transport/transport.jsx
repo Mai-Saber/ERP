@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 
-import Table from "../../../../common/table/table";
-import TableFilter from "../../../../common/tableFilter/tableFilter";
-import "../../../../common/show modal/showModal.css";
-import Loading from "../../../../common/loading/loading";
-import TableIcons from "../../../../common/tableIcons/tableIcons";
-import NoData from "../../../../common/noData/noData";
-import WrongMessage from "../../../../common/wrongMessage/wrongMessage";
-import { base_url, config } from "../../../../service/service";
+import Table from "../../../../../common/table/table";
+import TableFilter from "../../../../../common/tableFilter/tableFilter";
+import "../../../../../common/show modal/showModal.css";
+import Loading from "../../../../../common/loading/loading";
+import TableIcons from "../../../../../common/tableIcons/tableIcons";
+import NoData from "../../../../../common/noData/noData";
+import WrongMessage from "../../../../../common/wrongMessage/wrongMessage";
+import { base_url, config } from "../../../../../service/service";
 
 import axios from "axios";
 import Toastify from "toastify-js";
@@ -19,14 +19,14 @@ import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
 import { Link } from "react-router-dom";
 
-function Refund(props) {
+function Transport(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
   const [companyID, setCompanyID] = useState(props.companyIDInApp);
   const [clientID, setClientID] = useState(props.clientIdInApp);
   const [columnsHeader, setColumnsHeader] = useState([]);
-  const [refunds, setRefunds] = useState([]);
-  const [totalRefundsLength, setTotalRefundsLength] = useState("");
+  const [transports, setTransports] = useState([]);
+  const [totalTransportsLength, setTotalTransportsLength] = useState("");
 
   //modals
   const [showModal, setShowModal] = useState(false);
@@ -34,13 +34,11 @@ function Refund(props) {
   const [editModal, setEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
-  const [newRefund, setNewRefund] = useState({
+  const [newTransport, setNewTransport] = useState({
     client_id: clientID,
     company_id: companyID,
-    invoice_id: "",
-    branch_id: "",
-    contact_id: "",
-    type_id: "",
+    from_warehouse_id: "",
+    to_warehouse_id: "",
     name: "",
     details: "",
 
@@ -55,17 +53,17 @@ function Refund(props) {
 
   // general
   useEffect(() => {
-    console.log("refund page");
-    // get Invoices
-    const getInvoices = async () => {
-      const url = `${base_url}/admin/company/accounting/refunds/${companyID}`;
+    console.log("transport page");
+    // get
+    const getTransport = async () => {
+      const url = `${base_url}/admin/company/accounting/stock-management/transport-requests/${companyID}`;
       await axios
         .get(url)
         .then((res) => {
           setLoading(false);
           setColumnsHeader(["Id", "Company Name", "Name"]);
-          setRefunds(res.data.data);
-          setTotalRefundsLength(res.data.meta?.total);
+          setTransports(res.data.data);
+          setTotalTransportsLength(res.data.meta?.total);
         })
         .catch((err) => {
           console.log("err", err);
@@ -78,16 +76,16 @@ function Refund(props) {
         });
     };
     // call functions
-    getInvoices();
+    getTransport();
   }, []);
 
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newRefund,
+      ...newTransport,
       [e.target.name]: e.target.value,
     };
-    setNewRefund(newData);
+    setNewTransport(newData);
 
     const newItem = {
       ...editItem,
@@ -129,14 +127,14 @@ function Refund(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/company/accounting/refunds/search/${companyID}?
+        `${base_url}/admin/company/accounting/stock-management/transport-requests/search/${companyID}?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setRefunds(res.data.data);
+      setTransports(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -146,11 +144,11 @@ function Refund(props) {
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
       await axios.delete(
-        `${base_url}/admin/company/accounting/refund/${id}`,
+        `${base_url}/admin/company/accounting/stock-management/transport-request/${id}`,
         config
       );
-      const newRow = refunds.filter((item) => item.id !== id);
-      setRefunds(newRow); // setRow(filterItems);
+      const newRow = transports.filter((item) => item.id !== id);
+      setTransports(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -176,44 +174,40 @@ function Refund(props) {
 
   const handleSubmitAdd = async () => {
     const data = {
-      client_id: newRefund.clientID,
-      company_id: newRefund.companyID,
-      branch_id: newRefund.branch_id,
-      invoice_id: newRefund.invoice_id,
-      contact_id: newRefund.contact_id,
-      type_id: newRefund.type_id,
-      name: newRefund.name,
-      details: newRefund.details,
+      client_id: newTransport.clientID,
+      company_id: newTransport.companyID,
+     from_warehouse_id:newTransport.from_warehouse_id,
+     to_warehouse_id:newTransport.to_warehouse_id,
+      name: newTransport.name,
+      details: newTransport.details,
       final_products: [
         {
-          category_id: newRefund.category_id,
-          product_id: newRefund.product_id,
-          final_product_id: newRefund.final_product_id,
-          measurement_unit_id: newRefund.measurement_unit_id,
-          unit_price: newRefund.unit_price,
-          count: newRefund.count,
+          category_id: newTransport.category_id,
+          product_id: newTransport.product_id,
+          final_product_id: newTransport.final_product_id,
+          measurement_unit_id: newTransport.measurement_unit_id,
+          unit_price: newTransport.unit_price,
+          count: newTransport.count,
         },
       ],
     };
 
     await axios
-      .post(`${base_url}/admin/company/accounting/refund`, data)
+      .post(`${base_url}/admin/company/accounting/stock-management/transport-request`, data)
       .then((res) => {
         Toastify({
-          text: `refund created successfully `,
+          text: `transport created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        refunds.unshift(res.data.data);
-        setNewRefund({
+        transports.unshift(res.data.data);
+        setNewTransport({
           client_id: clientID,
           company_id: companyID,
-          invoice_id: "",
-          branch_id: "",
-          contact_id: "",
-          type_id: "",
+          from_warehouse_id: "",
+          to_warehouse_id: "",
           name: "",
           details: "",
 
@@ -242,7 +236,7 @@ function Refund(props) {
   const handleShow = async (id) => {
     setShowModal(true);
     const res = await axios.get(
-      `${base_url}/admin/company/accounting/refund/${id}`,
+      `${base_url}/admin/company/accounting/stock-management/transport-request/${id}`,
       config
     );
     setSelectedItem(res.data.data);
@@ -251,7 +245,7 @@ function Refund(props) {
   // edit
   const handleEdit = async (id) => {
     const res = await axios.get(
-      `${base_url}/admin/company/accounting/refund/${id}`
+      `${base_url}/admin/company/accounting/stock-management/transport-request/${id}`
     );
     setEditItem(res.data.data);
     setEditModal(true);
@@ -259,24 +253,24 @@ function Refund(props) {
 
   const handleSubmitEdit = async (id) => {
     const data = {
-      contact_id: editItem.contact_id,
-      type_id: editItem.type_id,
       name: editItem.name,
       details: editItem.details,
+      from_warehouse_id: editItem.from_warehouse_id,
+      to_warehouse_id: editItem.to_warehouse_id,
     };
     await axios
-      .patch(`${base_url}/admin/company/accounting/refund/${id}`, data)
+      .patch(`${base_url}/admin/company/accounting/stock-management/transport-request/${id}`, data)
       .then((res) => {
         Toastify({
-          text: `refund updated successfully`,
+          text: `transport updated successfully`,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < refunds.length; i++) {
-          if (refunds[i].id === id) {
-            refunds[i] = res.data.data;
+        for (let i = 0; i < transports.length; i++) {
+          if (transports[i].id === id) {
+            transports[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -307,9 +301,9 @@ function Refund(props) {
 
       {/* branches */}
       {!loading && !wrongMessage && (
-        <div className="refund">
+        <div className="transport">
           {/* header */}
-          <h1 className="header">{t("Refunds")}</h1>
+          <h1 className="header">{t("Transport")}</h1>
           {/* upper table */}
           <TableFilter
             handleAdd={handleAdd}
@@ -320,17 +314,17 @@ function Refund(props) {
             }
           />
           {/* table */}
-          {refunds.length !== 0 ? (
+          {transports.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalRefundsLength}
+              totalRecords={totalTransportsLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {refunds?.map((item, i) => (
+              {transports?.map((item, i) => (
                 <tr key={item.id}>
                   <td>{i + 1}</td>
 
@@ -339,20 +333,20 @@ function Refund(props) {
                   <td>{item.details}</td>
 
                   {/* buttons */}
-                  {/* refundFinalProduct  */}
+                  {/* transportFinalProduct  */}
                   <td>
                     <Link
-                      to="/companies/refund/refundFinalProduct"
+                      to="/companies/refund/transportFinalProduct"
                       className="btn btn-primary"
                       onClick={() =>
-                        props.handleRefundFinalProduct(
+                        props.handleTransportFinalProduct(
                           item?.id,
                           item?.client_id,
                           item?.company_id
                         )
                       }
                     >
-                      {t("RefundFinalProduct")}
+                      {t("TransportFinalProduct")}
                     </Link>
                   </td>
 
@@ -367,7 +361,7 @@ function Refund(props) {
               ))}
             </Table>
           ) : (
-            <NoData data="Refunds" />
+            <NoData data="transport Final Product" />
           )}
           {/* modals */}
           {/* show modal */}
@@ -380,7 +374,7 @@ function Refund(props) {
           <ModalAdd
             show={addModal}
             handleClose={handleClose}
-            newRefund={newRefund}
+            newTransport={newTransport}
             companyID={companyID}
             handleChange={handleChange}
             handleSubmitAdd={handleSubmitAdd}
@@ -401,4 +395,4 @@ function Refund(props) {
   );
 }
 
-export default Refund;
+export default Transport;

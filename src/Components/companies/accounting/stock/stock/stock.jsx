@@ -19,7 +19,7 @@ import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
 import { Link } from "react-router-dom";
 
-function Refund(props) {
+function Stock(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
   const [companyID, setCompanyID] = useState(props.companyIDInApp);
@@ -393,4 +393,4 @@ function Refund(props) {
   );
 }
 
-export default Refund;
+export default Stock;
