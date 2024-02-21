@@ -158,6 +158,10 @@ i18n
           DiscountFinalProduct: "Discount Final Product",
           // invoices
           Invoices: "Invoices",
+          // InvoiceTax
+          InvoiceTax: "Invoice Tax",
+          // InvoiceAdditionalCost
+          InvoiceAdditionalCost: "Invoice Additional Cost",
         },
       },
       ar: {
@@ -307,6 +311,10 @@ i18n
 
           // invoices
           Invoices: "فواتير",
+          // InvoiceTax
+          InvoiceTax: "فاتورة الضريبة",
+          // InvoiceAdditionalCost
+          InvoiceAdditionalCost: "فاتورة تكلفة اضافية",
         },
       },
     },

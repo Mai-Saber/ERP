@@ -31,6 +31,11 @@ import Discount from "./Components/companies/accounting/discount/discount";
 import DiscountFinalProduct from "./Components/companies/accounting/discount/discountFinalProduct/discountFinalProduct";
 import DiscountBranch from "./Components/companies/accounting/discount/discountBranch/discountBranch";
 import Employee from "./Components/companies/employee/employee";
+import Invoice from "./Components/companies/accounting/Invoice/invoice";
+import InvoiceTax from "./Components/companies/accounting/Invoice/invoiceTax/invoiceTax"
+import InvoiceAdditionalCost from "./Components/companies/accounting/Invoice/invoiceAdditionalCost/invoiceAdditionalCost"
+import InvoiceFinalProduct from "./Components/companies/accounting/Invoice/invoiceFinalProduct/invoiceFinalProduct"
+
 import "./common/language/language.css";
 import i18n from "./common/language/i18n";
 import AllRoutes from "./common/routes/allRoutes";
@@ -100,6 +105,7 @@ function App() {
   const [finalProductId, setFinalProductId] = useState("");
   const [priceListId, setPriceListId] = useState("");
   const [discountId, setDiscountId] = useState("");
+  const [invoiceId, setInvoiceId]=useState("")
 
   useEffect(() => {
     const dir = i18n.dir(i18n.lng);
@@ -213,6 +219,7 @@ function App() {
     setCompanyId(id);
     setClientId(clientId);
   };
+ 
   const handleDiscountFinalProduct = (id, clientId, companyID) => {
     console.log(id, clientId, companyID);
     setDiscountId(id);
@@ -225,6 +232,30 @@ function App() {
     setClientId(clientId);
     setCompanyId(companyID);
   };
+
+  // invoice
+  const handleInvoices = (id, clientId) => {
+    setCompanyId(id);
+    setClientId(clientId);
+  };
+ const handleInvoiceTax = (id, clientId, companyID) => {
+   console.log(id, clientId, companyID);
+   setInvoiceId(id);
+   setClientId(clientId);
+   setCompanyId(companyID);
+ };
+ const handleInvoiceAdditionalCost = (id, clientId, companyID) => {
+   console.log(id, clientId, companyID);
+   setInvoiceId(id);
+   setClientId(clientId);
+   setCompanyId(companyID);
+ };
+ const handleInvoiceFinalProduct = (id, clientId, companyID) => {
+   console.log(id, clientId, companyID);
+   setInvoiceId(id);
+   setClientId(clientId);
+   setCompanyId(companyID);
+ };
 
   //////////////////////////////////////////////////
   return (
@@ -264,7 +295,7 @@ function App() {
                         handleCashBox={handleCashBox}
                         handleMeasurementUnit={handleMeasurementUnit}
                         handleDiscount={handleDiscount}
-                        // handleInvoices={handleInvoices}
+                        handleInvoices={handleInvoices}
                       />
                     }
                     ///
@@ -375,6 +406,40 @@ function App() {
                       />
                     }
                     ///
+
+                    // invoice & tax & add cost & final product
+                    InvoiceEle={
+                      <Invoice
+                        handleInvoiceTax={handleInvoiceTax}
+                        handleInvoiceAdditionalCost={
+                          handleInvoiceAdditionalCost
+                        }
+                        handleInvoiceFinalProduct={handleInvoiceFinalProduct}
+                        companyIDInApp={companyID}
+                        clientIdInApp={clientId}
+                      />
+                    }
+                    InvoiceTaxEle={
+                      <InvoiceTax
+                        invoiceIdInApp={invoiceId}
+                        companyIDInApp={companyID}
+                        clientIdInApp={clientId}
+                      />
+                    }
+                    InvoiceAdditionalCostEle={
+                      <InvoiceAdditionalCost
+                        invoiceIdInApp={invoiceId}
+                        companyIDInApp={companyID}
+                        clientIdInApp={clientId}
+                      />
+                    }
+                    InvoiceFinalProductEle={
+                      <InvoiceFinalProduct
+                        invoiceIdInApp={invoiceId}
+                        companyIDInApp={companyID}
+                        clientIdInApp={clientId}
+                      />
+                    }
                     // branch & ware house
                     branchesEle={
                       <Branches

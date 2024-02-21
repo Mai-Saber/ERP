@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 
-import Table from "../../../../common/table/table";
-import TableFilter from "../../../../common/tableFilter/tableFilter";
-import "../../../../common/show modal/showModal.css";
-import Loading from "../../../../common/loading/loading";
-import TableIcons from "../../../../common/tableIcons/tableIcons";
-import NoData from "../../../../common/noData/noData";
-import WrongMessage from "../../../../common/wrongMessage/wrongMessage";
-import { base_url, config } from "../../../../service/service";
+import Table from "../../../../../common/table/table";
+import TableFilter from "../../../../../common/tableFilter/tableFilter";
+import "../../../../../common/show modal/showModal.css";
+import Loading from "../../../../../common/loading/loading";
+import TableIcons from "../../../../../common/tableIcons/tableIcons";
+import NoData from "../../../../../common/noData/noData";
+import WrongMessage from "../../../../../common/wrongMessage/wrongMessage";
+import { base_url, config } from "../../../../../service/service";
 
 import axios from "axios";
 import Toastify from "toastify-js";
@@ -19,14 +19,14 @@ import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
 import { Link } from "react-router-dom";
 
-function Invoice(props) {
+function Refund(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
   const [companyID, setCompanyID] = useState(props.companyIDInApp);
   const [clientID, setClientID] = useState(props.clientIdInApp);
   const [columnsHeader, setColumnsHeader] = useState([]);
-  const [invoices, setInvoices] = useState([]);
-  const [totalInvoicesLength, setTotalInvoicesLength] = useState("");
+  const [stock, setStock] = useState([]);
+  const [totalStocksLength, setTotalStocksLength] = useState("");
 
   //modals
   const [showModal, setShowModal] = useState(false);
@@ -34,15 +34,11 @@ function Invoice(props) {
   const [editModal, setEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
-  const [newInvoices, setNewInvoices] = useState({
+  const [newStock, setNewStock] = useState({
     client_id: clientID,
     company_id: companyID,
+    warehouse_id: "",
     branch_id: "",
-    employee_id: "",
-    contact_id: "",
-    type_id: "",
-    payment_type_id: "",
-    payment_method_id: "",
     name: "",
     details: "",
 
@@ -52,26 +48,22 @@ function Invoice(props) {
     measurement_unit_id: "",
     unit_price: "",
     count: "",
-    tax_ids: [],
-
-    additional_cost_id: "",
-    value: "",
   });
   const { t } = useTranslation();
 
   // general
   useEffect(() => {
-    console.log("Invoices page");
-    // get Invoices
-    const getInvoices = async () => {
-      const url = `${base_url}/admin/company/accounting/invoices/${companyID}`;
+    console.log("Stocks page");
+    // get getStocks
+    const getStocks = async () => {
+      const url = `${base_url}/admin/company/accounting/stock-management/stocking-request/${companyID}`;
       await axios
         .get(url)
         .then((res) => {
           setLoading(false);
           setColumnsHeader(["Id", "Company Name", "Name"]);
-          setInvoices(res.data.data);
-          setTotalInvoicesLength(res.data.meta?.total);
+          setStock(res.data.data);
+          setTotalStocksLength(res.data.meta?.total);
         })
         .catch((err) => {
           console.log("err", err);
@@ -84,16 +76,16 @@ function Invoice(props) {
         });
     };
     // call functions
-    getInvoices();
+    getStocks();
   }, []);
 
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newInvoices,
+      ...newStock,
       [e.target.name]: e.target.value,
     };
-    setNewInvoices(newData);
+    setNewStock(newData);
 
     const newItem = {
       ...editItem,
@@ -135,14 +127,14 @@ function Invoice(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/company/accounting/invoices/search/${companyID}?
+        `${base_url}/admin/company/accounting/stock-management/stocking-requests/search/${companyID}?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setInvoices(res.data.data);
+      setStock(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -152,11 +144,11 @@ function Invoice(props) {
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
       await axios.delete(
-        `${base_url}/admin/company/accounting/invoice/${id}`,
+        `${base_url}/admin/company/accounting/stock-management/stocking-request/${id}`,
         config
       );
-      const newRow = invoices.filter((item) => item.id !== id);
-      setInvoices(newRow); // setRow(filterItems);
+      const newRow = stock.filter((item) => item.id !== id);
+      setStock(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -182,55 +174,40 @@ function Invoice(props) {
 
   const handleSubmitAdd = async () => {
     const data = {
-      client_id: newInvoices.clientID,
-      company_id: newInvoices.companyID,
-      branch_id: newInvoices.branch_id,
-      employee_id: newInvoices.employee_id,
-      contact_id: newInvoices.contact_id,
-      type_id: newInvoices.type_id,
-      payment_type_id: newInvoices.payment_type_id,
-      payment_method_id: newInvoices.payment_method_id,
-      name: newInvoices.name,
-      details: newInvoices.details,
+      client_id: newStock.clientID,
+      company_id: newStock.companyID,
+      branch_id: newStock.branch_id,
+      warehouse_id:newStock.warehouse_id,
+      name: newStock.name,
+      details: newStock.details,
       final_products: [
         {
-          category_id: newInvoices.category_id,
-          product_id: newInvoices.product_id,
-          final_product_id: newInvoices.final_product_id,
-          measurement_unit_id: newInvoices.measurement_unit_id,
-          unit_price: newInvoices.unit_price,
-          count: newInvoices.count,
-        },
-      ],
-      tax_ids: newInvoices.tax_ids,
-      additional_costs: [
-        {
-          additional_cost_id: newInvoices.additional_cost_id,
-          value: newInvoices.value,
+          category_id: newStock.category_id,
+          product_id: newStock.product_id,
+          final_product_id: newStock.final_product_id,
+          measurement_unit_id: newStock.measurement_unit_id,
+          unit_price: newStock.unit_price,
+          count: newStock.count,
         },
       ],
     };
 
     await axios
-      .post(`${base_url}/admin/company/accounting/invoice`, data)
+      .post(`${base_url}/admin/company/accounting/stock-management/stocking-request`, data)
       .then((res) => {
         Toastify({
-          text: `invoice created successfully `,
+          text: `stock created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        invoices.unshift(res.data.data);
-        setNewInvoices({
+        stock.unshift(res.data.data);
+        setNewStock({
           client_id: clientID,
           company_id: companyID,
+          warehouse_id: "",
           branch_id: "",
-          employee_id: "",
-          contact_id: "",
-          type_id: "",
-          payment_type_id: "",
-          payment_method_id: "",
           name: "",
           details: "",
 
@@ -240,10 +217,6 @@ function Invoice(props) {
           measurement_unit_id: "",
           unit_price: "",
           count: "",
-          tax_ids: [],
-
-          additional_cost_id: "",
-          value: "",
         });
         setAddModal(false);
       })
@@ -263,7 +236,7 @@ function Invoice(props) {
   const handleShow = async (id) => {
     setShowModal(true);
     const res = await axios.get(
-      `${base_url}/admin/company/accounting/invoice/${id}`,
+      `${base_url}/admin/company/accounting/stock-management/stocking-request/${id}`,
       config
     );
     setSelectedItem(res.data.data);
@@ -272,7 +245,7 @@ function Invoice(props) {
   // edit
   const handleEdit = async (id) => {
     const res = await axios.get(
-      `${base_url}/admin/company/accounting/invoice/${id}`
+      `${base_url}/admin/company/accounting/stock-management/stocking-request/${id}`
     );
     setEditItem(res.data.data);
     setEditModal(true);
@@ -280,24 +253,22 @@ function Invoice(props) {
 
   const handleSubmitEdit = async (id) => {
     const data = {
-      contact_id: editItem.contact_id,
-      type_id: editItem.type_id,
       name: editItem.name,
       details: editItem.details,
     };
     await axios
-      .patch(`${base_url}/admin/company/accounting/invoice/${id}`, data)
+      .patch(`${base_url}/admin/company/accounting/stock-management/stocking-request/${id}`, data)
       .then((res) => {
         Toastify({
-          text: `invoices updated successfully`,
+          text: `stock updated successfully`,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < invoices.length; i++) {
-          if (invoices[i].id === id) {
-            invoices[i] = res.data.data;
+        for (let i = 0; i < stock.length; i++) {
+          if (stock[i].id === id) {
+            stock[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -328,9 +299,9 @@ function Invoice(props) {
 
       {/* branches */}
       {!loading && !wrongMessage && (
-        <div className="invoices">
+        <div className="stock">
           {/* header */}
-          <h1 className="header">{t("Invoices")}</h1>
+          <h1 className="header">{t("stock")}</h1>
           {/* upper table */}
           <TableFilter
             handleAdd={handleAdd}
@@ -341,17 +312,17 @@ function Invoice(props) {
             }
           />
           {/* table */}
-          {invoices.length !== 0 ? (
+          {stock.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalInvoicesLength}
+              totalRecords={totalStocksLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {invoices?.map((item, i) => (
+              {stock?.map((item, i) => (
                 <tr key={item.id}>
                   <td>{i + 1}</td>
 
@@ -360,52 +331,20 @@ function Invoice(props) {
                   <td>{item.details}</td>
 
                   {/* buttons */}
-                  {/* invoice tax */}
+                  {/* stockFinalProduct  */}
                   <td>
                     <Link
-                      to="/companies/invoices/invoiceTax"
+                      to="/companies/refund/stockFinalProduct"
                       className="btn btn-primary"
                       onClick={() =>
-                        props.handleInvoiceTax(
+                        props.handleStockFinalProduct(
                           item?.id,
                           item?.client_id,
                           item?.company_id
                         )
                       }
                     >
-                      {t("InvoiceTax")}
-                    </Link>
-                  </td>
-                  {/* additional cost */}
-                  <td>
-                    <Link
-                      to="/companies/invoices/invoiceAdditionalCost"
-                      className="btn btn-primary"
-                      onClick={() =>
-                        props.handleInvoiceAdditionalCost(
-                          item?.id,
-                          item?.client_id,
-                          item?.company_id
-                        )
-                      }
-                    >
-                      {t("InvoiceAdditionalCost")}
-                    </Link>
-                  </td>
-                  {/* finalProduct */}
-                  <td>
-                    <Link
-                      to="/companies/invoices/invoiceFinalProduct"
-                      className="btn btn-primary"
-                      onClick={() =>
-                        props.handleInvoiceFinalProduct(
-                          item?.id,
-                          item?.client_id,
-                          item?.company_id
-                        )
-                      }
-                    >
-                      {t("InvoiceFinalProduct")}
+                      {t("stockFinalProduct")}
                     </Link>
                   </td>
 
@@ -420,7 +359,7 @@ function Invoice(props) {
               ))}
             </Table>
           ) : (
-            <NoData data="Invoices" />
+            <NoData data="stocks" />
           )}
           {/* modals */}
           {/* show modal */}
@@ -433,7 +372,8 @@ function Invoice(props) {
           <ModalAdd
             show={addModal}
             handleClose={handleClose}
-            newInvoices={newInvoices}
+            newStock={newStock}
+            companyID={companyID}
             handleChange={handleChange}
             handleSubmitAdd={handleSubmitAdd}
           />
@@ -453,4 +393,4 @@ function Invoice(props) {
   );
 }
 
-export default Invoice;
+export default Refund;

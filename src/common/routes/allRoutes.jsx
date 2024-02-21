@@ -29,9 +29,10 @@ function AllRoutes(props) {
       <Route
         path="/companies/priceList/priceListProduct"
         element={props.priceListProductEle}
-      />,
-      <Route path="/companies/employee" element={props.employeeEle} />
-      ,{/* branches & ware house */}
+      />
+      ,
+      <Route path="/companies/employee" element={props.employeeEle} />,
+      {/* branches & ware house */}
       <Route path="/companies/branches" element={props.branchesEle} />
       ,
       <Route
@@ -65,7 +66,21 @@ function AllRoutes(props) {
       />
       ,{/* invoice */}
       <Route path="/companies/invoices" element={props.InvoiceEle} />,
-      {/* categories & product& final product */}
+      <Route
+        path="/companies/invoices/invoiceTax"
+        element={props.InvoiceTaxEle}
+      />
+      ,
+      <Route
+        path="/companies/invoices/invoiceAdditionalCost"
+        element={props.InvoiceAdditionalCostEle}
+      />
+      ,
+      <Route
+        path="/companies/invoices/invoiceFinalProduct"
+        element={props.InvoiceFinalProductEle}
+      />
+      , ,{/* categories & product& final product */}
       <Route path="/companies/categories" element={props.categoriesEle} />
       ,
       <Route path="/companies/category/product" element={props.productEle} />,

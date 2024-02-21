@@ -19,14 +19,14 @@ import ModalAdd from "./modals/add";
 import ModalEdit from "./modals/edit";
 import { Link } from "react-router-dom";
 
-function Invoice(props) {
+function Refund(props) {
   const [loading, setLoading] = useState(true);
   const [wrongMessage, setWrongMessage] = useState(false);
   const [companyID, setCompanyID] = useState(props.companyIDInApp);
   const [clientID, setClientID] = useState(props.clientIdInApp);
   const [columnsHeader, setColumnsHeader] = useState([]);
-  const [invoices, setInvoices] = useState([]);
-  const [totalInvoicesLength, setTotalInvoicesLength] = useState("");
+  const [refunds, setRefunds] = useState([]);
+  const [totalRefundsLength, setTotalRefundsLength] = useState("");
 
   //modals
   const [showModal, setShowModal] = useState(false);
@@ -34,15 +34,13 @@ function Invoice(props) {
   const [editModal, setEditModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState({});
   const [editItem, setEditItem] = useState({});
-  const [newInvoices, setNewInvoices] = useState({
+  const [newRefund, setNewRefund] = useState({
     client_id: clientID,
     company_id: companyID,
+    invoice_id: "",
     branch_id: "",
-    employee_id: "",
     contact_id: "",
     type_id: "",
-    payment_type_id: "",
-    payment_method_id: "",
     name: "",
     details: "",
 
@@ -52,26 +50,22 @@ function Invoice(props) {
     measurement_unit_id: "",
     unit_price: "",
     count: "",
-    tax_ids: [],
-
-    additional_cost_id: "",
-    value: "",
   });
   const { t } = useTranslation();
 
   // general
   useEffect(() => {
-    console.log("Invoices page");
+    console.log("refund page");
     // get Invoices
     const getInvoices = async () => {
-      const url = `${base_url}/admin/company/accounting/invoices/${companyID}`;
+      const url = `${base_url}/admin/company/accounting/refunds/${companyID}`;
       await axios
         .get(url)
         .then((res) => {
           setLoading(false);
           setColumnsHeader(["Id", "Company Name", "Name"]);
-          setInvoices(res.data.data);
-          setTotalInvoicesLength(res.data.meta?.total);
+          setRefunds(res.data.data);
+          setTotalRefundsLength(res.data.meta?.total);
         })
         .catch((err) => {
           console.log("err", err);
@@ -90,10 +84,10 @@ function Invoice(props) {
   // change any input
   const handleChange = (e) => {
     const newData = {
-      ...newInvoices,
+      ...newRefund,
       [e.target.name]: e.target.value,
     };
-    setNewInvoices(newData);
+    setNewRefund(newData);
 
     const newItem = {
       ...editItem,
@@ -135,14 +129,14 @@ function Invoice(props) {
       });
 
       const res = await axios.get(
-        `${base_url}/admin/company/accounting/invoices/search/${companyID}?
+        `${base_url}/admin/company/accounting/refunds/search/${companyID}?
           per_page=${Number(perPage) || ""}
           &query_string=${queryString || ""}
           &user_account_type_id=${filterType || ""}
           &page=${pageNumber || ""}
     `
       );
-      setInvoices(res.data.data);
+      setRefunds(res.data.data);
     } catch (err) {
       console.log(err);
     }
@@ -152,11 +146,11 @@ function Invoice(props) {
   const handleDelete = async (id, name) => {
     if (window.confirm("Are you Sure? ")) {
       await axios.delete(
-        `${base_url}/admin/company/accounting/invoice/${id}`,
+        `${base_url}/admin/company/accounting/refund/${id}`,
         config
       );
-      const newRow = invoices.filter((item) => item.id !== id);
-      setInvoices(newRow); // setRow(filterItems);
+      const newRow = refunds.filter((item) => item.id !== id);
+      setRefunds(newRow); // setRow(filterItems);
       Toastify({
         text: `${name} deleted `,
         style: {
@@ -182,55 +176,44 @@ function Invoice(props) {
 
   const handleSubmitAdd = async () => {
     const data = {
-      client_id: newInvoices.clientID,
-      company_id: newInvoices.companyID,
-      branch_id: newInvoices.branch_id,
-      employee_id: newInvoices.employee_id,
-      contact_id: newInvoices.contact_id,
-      type_id: newInvoices.type_id,
-      payment_type_id: newInvoices.payment_type_id,
-      payment_method_id: newInvoices.payment_method_id,
-      name: newInvoices.name,
-      details: newInvoices.details,
+      client_id: newRefund.clientID,
+      company_id: newRefund.companyID,
+      branch_id: newRefund.branch_id,
+      invoice_id: newRefund.invoice_id,
+      contact_id: newRefund.contact_id,
+      type_id: newRefund.type_id,
+      name: newRefund.name,
+      details: newRefund.details,
       final_products: [
         {
-          category_id: newInvoices.category_id,
-          product_id: newInvoices.product_id,
-          final_product_id: newInvoices.final_product_id,
-          measurement_unit_id: newInvoices.measurement_unit_id,
-          unit_price: newInvoices.unit_price,
-          count: newInvoices.count,
-        },
-      ],
-      tax_ids: newInvoices.tax_ids,
-      additional_costs: [
-        {
-          additional_cost_id: newInvoices.additional_cost_id,
-          value: newInvoices.value,
+          category_id: newRefund.category_id,
+          product_id: newRefund.product_id,
+          final_product_id: newRefund.final_product_id,
+          measurement_unit_id: newRefund.measurement_unit_id,
+          unit_price: newRefund.unit_price,
+          count: newRefund.count,
         },
       ],
     };
 
     await axios
-      .post(`${base_url}/admin/company/accounting/invoice`, data)
+      .post(`${base_url}/admin/company/accounting/refund`, data)
       .then((res) => {
         Toastify({
-          text: `invoice created successfully `,
+          text: `refund created successfully `,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        invoices.unshift(res.data.data);
-        setNewInvoices({
+        refunds.unshift(res.data.data);
+        setNewRefund({
           client_id: clientID,
           company_id: companyID,
+          invoice_id: "",
           branch_id: "",
-          employee_id: "",
           contact_id: "",
           type_id: "",
-          payment_type_id: "",
-          payment_method_id: "",
           name: "",
           details: "",
 
@@ -240,10 +223,6 @@ function Invoice(props) {
           measurement_unit_id: "",
           unit_price: "",
           count: "",
-          tax_ids: [],
-
-          additional_cost_id: "",
-          value: "",
         });
         setAddModal(false);
       })
@@ -263,7 +242,7 @@ function Invoice(props) {
   const handleShow = async (id) => {
     setShowModal(true);
     const res = await axios.get(
-      `${base_url}/admin/company/accounting/invoice/${id}`,
+      `${base_url}/admin/company/accounting/refund/${id}`,
       config
     );
     setSelectedItem(res.data.data);
@@ -272,7 +251,7 @@ function Invoice(props) {
   // edit
   const handleEdit = async (id) => {
     const res = await axios.get(
-      `${base_url}/admin/company/accounting/invoice/${id}`
+      `${base_url}/admin/company/accounting/refund/${id}`
     );
     setEditItem(res.data.data);
     setEditModal(true);
@@ -286,18 +265,18 @@ function Invoice(props) {
       details: editItem.details,
     };
     await axios
-      .patch(`${base_url}/admin/company/accounting/invoice/${id}`, data)
+      .patch(`${base_url}/admin/company/accounting/refund/${id}`, data)
       .then((res) => {
         Toastify({
-          text: `invoices updated successfully`,
+          text: `refund updated successfully`,
           style: {
             background: "green",
             color: "white",
           },
         }).showToast();
-        for (let i = 0; i < invoices.length; i++) {
-          if (invoices[i].id === id) {
-            invoices[i] = res.data.data;
+        for (let i = 0; i < refunds.length; i++) {
+          if (refunds[i].id === id) {
+            refunds[i] = res.data.data;
           }
         }
         setEditItem({});
@@ -328,9 +307,9 @@ function Invoice(props) {
 
       {/* branches */}
       {!loading && !wrongMessage && (
-        <div className="invoices">
+        <div className="refund">
           {/* header */}
-          <h1 className="header">{t("Invoices")}</h1>
+          <h1 className="header">{t("Refunds")}</h1>
           {/* upper table */}
           <TableFilter
             handleAdd={handleAdd}
@@ -341,17 +320,17 @@ function Invoice(props) {
             }
           />
           {/* table */}
-          {invoices.length !== 0 ? (
+          {refunds.length !== 0 ? (
             <Table
               columns={columnsHeader}
               // pagination
               first={pageNumber}
               rows={rowsPerPage}
-              totalRecords={totalInvoicesLength}
+              totalRecords={totalRefundsLength}
               onPageChange={onPageChange}
             >
               {/* table children */}
-              {invoices?.map((item, i) => (
+              {refunds?.map((item, i) => (
                 <tr key={item.id}>
                   <td>{i + 1}</td>
 
@@ -360,52 +339,20 @@ function Invoice(props) {
                   <td>{item.details}</td>
 
                   {/* buttons */}
-                  {/* invoice tax */}
+                  {/* refundFinalProduct  */}
                   <td>
                     <Link
-                      to="/companies/invoices/invoiceTax"
+                      to="/companies/refund/refundFinalProduct"
                       className="btn btn-primary"
                       onClick={() =>
-                        props.handleInvoiceTax(
+                        props.handleRefundFinalProduct(
                           item?.id,
                           item?.client_id,
                           item?.company_id
                         )
                       }
                     >
-                      {t("InvoiceTax")}
-                    </Link>
-                  </td>
-                  {/* additional cost */}
-                  <td>
-                    <Link
-                      to="/companies/invoices/invoiceAdditionalCost"
-                      className="btn btn-primary"
-                      onClick={() =>
-                        props.handleInvoiceAdditionalCost(
-                          item?.id,
-                          item?.client_id,
-                          item?.company_id
-                        )
-                      }
-                    >
-                      {t("InvoiceAdditionalCost")}
-                    </Link>
-                  </td>
-                  {/* finalProduct */}
-                  <td>
-                    <Link
-                      to="/companies/invoices/invoiceFinalProduct"
-                      className="btn btn-primary"
-                      onClick={() =>
-                        props.handleInvoiceFinalProduct(
-                          item?.id,
-                          item?.client_id,
-                          item?.company_id
-                        )
-                      }
-                    >
-                      {t("InvoiceFinalProduct")}
+                      {t("RefundFinalProduct")}
                     </Link>
                   </td>
 
@@ -420,7 +367,7 @@ function Invoice(props) {
               ))}
             </Table>
           ) : (
-            <NoData data="Invoices" />
+            <NoData data="Refunds" />
           )}
           {/* modals */}
           {/* show modal */}
@@ -433,7 +380,8 @@ function Invoice(props) {
           <ModalAdd
             show={addModal}
             handleClose={handleClose}
-            newInvoices={newInvoices}
+            newRefund={newRefund}
+            companyID={companyID}
             handleChange={handleChange}
             handleSubmitAdd={handleSubmitAdd}
           />
@@ -453,4 +401,4 @@ function Invoice(props) {
   );
 }
 
-export default Invoice;
+export default Refund;
